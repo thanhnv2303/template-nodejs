@@ -49,8 +49,9 @@ router.post("/create-bureau", authen, upload.single("excel-file"), async (req, r
 
         bureau.password = randomPassword;
         bureaus.push(bureau);
-        console.log(bureaus.length);
-        res.json(bureaus);
+        if (bureaus.length === rows.length) {
+          res.json(bureaus);
+        }
       });
     });
   } catch (error) {
