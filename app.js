@@ -16,6 +16,9 @@ app.use(makeRequest);
 const votingRouter = require("./routes/voting/voting-router");
 app.use(votingRouter);
 
+const creatBureau = require("./routes/create-bureau/create-bureau");
+app.use(creatBureau);
+
 app.listen(8003, () => {
   console.log("App listening on port 8003!");
 });

@@ -9,17 +9,24 @@ const generator = require("generate-password");
 const bcrypt = require("bcryptjs");
 const ROLE = require("../acc/ROLE");
 
+const { Duplex } = require("stream");
+function bufferToStream(myBuuffer) {
+  let tmp = new Duplex();
+  tmp.push(myBuuffer);
+  tmp.push(null);
+  return tmp;
+}
+
 router.post("/create-bureau", authen, upload.single("excel-file"), async (req, res) => {
   try {
     const accCol = (await connection).db().collection("Account");
     const bureauProfileCol = (await connection).db().collection("BureauProfile");
 
-    readXlsxFile(req.file.buffer).then(async (rows) => {
+    readXlsxFile(bufferToStream(req.file.buffer)).then(async (rows) => {
+      const bureaus = [];
       // skip header
       rows.shift();
-
       // parse excel
-      const bureaus = [];
       rows.forEach(async (row) => {
         let bureau = {
           bureauId: row[0],
@@ -31,7 +38,6 @@ router.post("/create-bureau", authen, upload.single("excel-file"), async (req, r
         // create pw
         let randomPassword = generator.generate({ length: 8, numbers: true });
         const salt = await bcrypt.genSalt();
-        console.log("salt: " + salt);
         let hashedPassword = await bcrypt.hash(randomPassword, salt);
 
         // insert to Account
@@ -43,9 +49,9 @@ router.post("/create-bureau", authen, upload.single("excel-file"), async (req, r
 
         bureau.password = randomPassword;
         bureaus.push(bureau);
+        console.log(bureaus.length);
+        res.json(bureaus);
       });
-
-      res.json(bureaus);
     });
   } catch (error) {
     res.status(500).json(error);
