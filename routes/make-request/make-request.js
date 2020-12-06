@@ -6,7 +6,7 @@ const { authen } = require("../acc/protect-middleware");
 const connection = require("../../db");
 const PROFILE = "Profile";
 const { profileSchema } = require("./schema");
-const sawtoothCli = require("./sawtooth-cli");
+const sawtoothCli = require("./make-req-cli");
 
 router.get("/profile", authen, async (req, res) => {
   try {
