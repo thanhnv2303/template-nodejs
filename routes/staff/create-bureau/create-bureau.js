@@ -3,11 +3,11 @@ const router = express.Router();
 const multer = require("multer");
 const upload = multer();
 const readXlsxFile = require("read-excel-file/node");
-const { authen } = require("../acc/protect-middleware");
-const connection = require("../../db");
+const { authen, author } = require("../../acc/protect-middleware");
+const connection = require("../../../db");
 const generator = require("generate-password");
 const bcrypt = require("bcryptjs");
-const ROLE = require("../acc/ROLE");
+const { ROLE } = require("../../acc/ROLE");
 
 const { Duplex } = require("stream");
 function bufferToStream(myBuuffer) {
@@ -17,7 +17,7 @@ function bufferToStream(myBuuffer) {
   return tmp;
 }
 
-router.post("/create-bureau", authen, upload.single("excel-file"), async (req, res) => {
+router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
     const accCol = (await connection).db().collection("Account");
     const bureauHistoryCol = (await connection).db().collection("BureauHistory");
@@ -46,14 +46,14 @@ router.post("/create-bureau", authen, upload.single("excel-file"), async (req, r
       const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
       const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index] }));
       const insertbureauHistoryResult = await bureauHistoryCol.insertOne({ time: new Date().toISOString().split("T")[0], profiles: profiles });
-      res.json(insertbureauHistoryResult.ops);
+      res.json(insertbureauHistoryResult.ops[0]);
     });
   } catch (error) {
     res.status(500).json(error);
   }
 });
 
-router.get("/bureau-history", async (req, res) => {
+router.get("/bureau-history", author(ROLE.STAFF), async (req, res) => {
   try {
     const bureauHistoryCol = (await connection).db().collection("BureauHistory");
     const result = await bureauHistoryCol.find({}).toArray();

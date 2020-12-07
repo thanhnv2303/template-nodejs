@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const connection = require("../../db");
+const connection = require("../../../db");
 const COLL_NAME = "VoteRequest";
 const voteCli = require("./vote-cli");
-const { authen } = require("../acc/protect-middleware");
+const { authen, author } = require("../../acc/protect-middleware");
+const { ROLE } = require("../../acc/ROLE");
 
-router.get("/vote-requests", authen, async (req, res) => {
+router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const col = (await connection).db().collection(COLL_NAME);
     const state = req.query.state;
@@ -23,7 +24,7 @@ router.get("/vote-requests", authen, async (req, res) => {
   }
 });
 
-router.post("/vote", authen, async (req, res) => {
+router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const decision = req.body.decision;
     const publicKeyOfRequest = req.body.publicKeyOfRequest;

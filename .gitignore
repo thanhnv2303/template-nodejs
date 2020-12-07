@@ -1,5 +1,41 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules/
-.env
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+debug.log
+# :hatching_chick: init commit
+# :sparkles: new: handle request page
+# :heavy_plus_sign: add: VotingRequest
+# :construction: working: handle request page
+# :pencil2: update navbar link 
+# :shirt: refactor: handle request page
+# :white_check_mark: done: handle request page
+# :bug: bug: require pw twice
+# :bug: fixed: require pw twice
+# :zap: improve performance: handle request page
+# :tada: version: v1.2
+# :truck: move: move A component to new folder
+# :wrench: setup/config: config .env
+# :package: build: build project
+# :whale: docker: docker front-end coponent
+# :pencil: docs: update README.md

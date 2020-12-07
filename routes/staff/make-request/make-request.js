@@ -4,11 +4,13 @@ const multer = require("multer");
 const upload = multer();
 const { authen } = require("../acc/protect-middleware");
 const connection = require("../../db");
-const PROFILE = "Profile";
 const { profileSchema } = require("./schema");
 const sawtoothCli = require("./make-req-cli");
+const { author } = require("../../acc/protect-middleware");
+const { ROLE } = require("../../acc/ROLE");
+const PROFILE = "UniversityProfile";
 
-router.get("/profile", authen, async (req, res) => {
+router.get("/university-profile", authen, async (req, res) => {
   try {
     const col = (await connection).db().collection(PROFILE);
     const profile = await col.findOne({ uid: req.user.uid });
@@ -18,10 +20,12 @@ router.get("/profile", authen, async (req, res) => {
   }
 });
 
-router.post("/make-request", authen, async (req, res) => {
+router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   try {
-    const profile = req.body;
     delete req.body._id;
+    const profile = req.body;
+    profile.uid = req.user.uid;
+    const col = (await connection).db().collection(PROFILE);
 
     // first valid data
     const { error } = profileSchema.validate(profile, { abortEarly: false });
@@ -35,13 +39,11 @@ router.post("/make-request", authen, async (req, res) => {
 
     // forward to sawtooth-cli to make tx
     const makeTxOp = await sawtoothCli.makeJoinRequest(profile);
-    const col = (await connection).db().collection(PROFILE);
-    profile.uid = req.user.uid;
     if (makeTxOp.ok) {
-      await col.updateOne({ uid: profile.uid }, { $set: { ...profile, state: "voting" } }, { upsert: true });
+      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting" } }, { upsert: true });
       res.json({ ok: true });
     } else {
-      await col.updateOne({ uid: profile.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
+      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
       res.json({ ok: false });
     }
   } catch (err) {

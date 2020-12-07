@@ -5,6 +5,7 @@ const connection = require("../../db");
 const ACC_COLL_NAME = "Account";
 const { signUpSchema, signInSchema } = require("./schema");
 const multer = require("multer");
+const { ROLE } = require("./role");
 const upload = multer();
 
 router.post("/signup", async (req, res) => {
@@ -29,11 +30,16 @@ router.post("/signup", async (req, res) => {
     req.body.hashedPassword = await bcrypt.hash(req.body.password, salt);
     delete req.body.password;
     delete req.body.repassword;
+
+    // set rol
+    res.body.role = ROLE.STAFF;
+
+    // create account
     const result = await col.insertOne(req.body);
 
     //send back token
-    const token = jwt.sign({ uid: result.insertedId }, process.env.TOKEN_SECRET);
-    res.json({ token: token });
+    const token = jwt.sign({ uid: result.insertedId, role: ROLE.STAFF }, process.env.TOKEN_SECRET);
+    res.json({ token: token, role: ROLE.STAFF });
   } catch (error) {
     console.log(error);
     res.status(500).send(error);
@@ -43,7 +49,7 @@ router.post("/signup", async (req, res) => {
 router.post("/signin", upload.none(), async (req, res) => {
   try {
     // validate
-    const { error, value } = signInSchema.validate(req.body, { abortEarly: false });
+    const { error } = signInSchema.validate(req.body, { abortEarly: false });
     if (error) {
       const errors = {};
       for (let err of error.details) {
@@ -61,8 +67,8 @@ router.post("/signin", upload.none(), async (req, res) => {
     if (!bcrypt.compareSync(req.body.password, acc.hashedPassword)) return res.status(400).json({ password: "Incorrect password!" });
 
     // send back a token
-    const token = jwt.sign({ uid: acc._id }, process.env.TOKEN_SECRET);
-    res.json({ token: token });
+    const token = jwt.sign({ uid: acc._id, role: acc.role }, process.env.TOKEN_SECRET);
+    res.json({ token: token, role: acc.role });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

@@ -8,16 +8,10 @@ const cors = require("cors");
 app.use(cors());
 
 const accRouter = require("./routes/acc/acc-router");
-app.use(accRouter);
+app.use("/acc/", accRouter);
 
-const makeRequest = require("./routes/make-request/make-request");
-app.use(makeRequest);
-
-const votingRouter = require("./routes/voting/voting-router");
-app.use(votingRouter);
-
-const creatBureau = require("./routes/create-bureau/create-bureau");
-app.use(creatBureau);
+const staffRouter = require("./routes/staff/staff-router");
+app.use("/staff", staffRouter);
 
 app.listen(8003, () => {
   console.log("App listening on port 8003!");
