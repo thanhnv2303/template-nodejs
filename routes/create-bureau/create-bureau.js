@@ -17,51 +17,6 @@ function bufferToStream(myBuuffer) {
   return tmp;
 }
 
-// router.post("/create-bureau", authen, upload.single("excel-file"), async (req, res) => {
-//   try {
-//     const accCol = (await connection).db().collection("Account");
-//     const bureauProfileCol = (await connection).db().collection("BureauProfile");
-
-//     readXlsxFile(bufferToStream(req.file.buffer)).then(async (rows) => {
-//       const bureaus = [];
-//       // skip header
-//       rows.shift();
-//       // parse excel
-//       rows.forEach(async (row) => {
-//         let bureau = {
-//           bureauId: row[0],
-//           name: row[1],
-//           email: row[2],
-//           department: row[3],
-//           publicKey: row[4],
-//         };
-//         // create pw
-//         let randomPassword = generator.generate({ length: 8, numbers: true });
-//         const salt = await bcrypt.genSalt();
-//         let hashedPassword = await bcrypt.hash(randomPassword, salt);
-
-//         // insert to Account
-//         // const opResult = await accCol.insertOne({ email: bureau.email, hashedPassword, role: ROLE.BUREAU });
-
-//         // inserto BureauProfile
-//         // bureau.uid = opResult.insertedId;
-//         bureau.firstTimePassword = randomPassword;
-//         // await bureauProfileCol.insertOne(bureau);
-
-//         bureaus.push(bureau);
-//         if (bureaus.length === rows.length) {
-//           // res.json(bureaus);
-//           // test only
-//           const opResult = await bureauProfileCol.insertMany(bureaus);
-//           res.json(opResult);
-//         }
-//       });
-//     });
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// });
-
 router.post("/create-bureau", authen, upload.single("excel-file"), async (req, res) => {
   try {
     const accCol = (await connection).db().collection("Account");
@@ -93,6 +48,16 @@ router.post("/create-bureau", authen, upload.single("excel-file"), async (req, r
       const insertbureauHistoryResult = await bureauHistoryCol.insertOne({ time: new Date().toISOString().split("T")[0], profiles: profiles });
       res.json(insertbureauHistoryResult.ops);
     });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/bureau-history", async (req, res) => {
+  try {
+    const bureauHistoryCol = (await connection).db().collection("BureauHistory");
+    const result = await bureauHistoryCol.find({}).toArray();
+    res.json(result);
   } catch (error) {
     res.status(500).json(error);
   }
