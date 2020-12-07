@@ -10,4 +10,8 @@ router.use(votingRouter);
 const createBureauRouter = require("./create-bureau/create-bureau");
 router.use(createBureauRouter);
 
+const createTeacherRouter = require("./create-teacher/create-teacher");
+router.use(createTeacherRouter);
+
+router.use(require("./create-student/create-student"));
 module.exports = router;
