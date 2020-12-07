@@ -2,15 +2,14 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const upload = multer();
-const { authen } = require("../acc/protect-middleware");
-const connection = require("../../db");
+const { authen, author } = require("../../acc/protect-middleware");
+const connection = require("../../../db");
 const { profileSchema } = require("./schema");
 const sawtoothCli = require("./make-req-cli");
-const { author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/ROLE");
 const PROFILE = "UniversityProfile";
 
-router.get("/university-profile", authen, async (req, res) => {
+router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const col = (await connection).db().collection(PROFILE);
     const profile = await col.findOne({ uid: req.user.uid });
@@ -51,7 +50,7 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   }
 });
 
-router.post("/change-avatar", authen, upload.single("avatar"), async (req, res) => {
+router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"), async (req, res) => {
   try {
     const col = (await connection).db().collection(PROFILE);
     const imgBase64 = req.file.buffer.toString("base64");

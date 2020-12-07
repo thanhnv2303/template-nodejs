@@ -32,7 +32,7 @@ router.post("/signup", async (req, res) => {
     delete req.body.repassword;
 
     // set rol
-    res.body.role = ROLE.STAFF;
+    req.body.role = ROLE.STAFF;
 
     // create account
     const result = await col.insertOne(req.body);

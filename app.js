@@ -8,7 +8,7 @@ const cors = require("cors");
 app.use(cors());
 
 const accRouter = require("./routes/acc/acc-router");
-app.use("/acc/", accRouter);
+app.use("/acc", accRouter);
 
 const staffRouter = require("./routes/staff/staff-router");
 app.use("/staff", staffRouter);

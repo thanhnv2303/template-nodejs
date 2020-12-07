@@ -53,7 +53,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
   }
 });
 
-router.get("/bureau-history", author(ROLE.STAFF), async (req, res) => {
+router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const bureauHistoryCol = (await connection).db().collection("BureauHistory");
     const result = await bureauHistoryCol.find({}).toArray();
