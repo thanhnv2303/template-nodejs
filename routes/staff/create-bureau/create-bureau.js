@@ -47,11 +47,17 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index] }));
       const insertbureauHistoryResult = await bureauHistoryCol.insertOne({ time: new Date().toISOString().split("T")[0], profiles: profiles });
       res.json(insertbureauHistoryResult.ops[0]);
+      await createBureauOnBlockchain(req.body.privateKeyHex, profiles);
     });
   } catch (error) {
     res.status(500).json(error);
   }
 });
+
+// Talk to sawtooth-cli
+async function createBureauOnBlockchain(privateKeyHex, bureausJson) {
+  return Promise.resolve({ ok: true });
+}
 
 router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
