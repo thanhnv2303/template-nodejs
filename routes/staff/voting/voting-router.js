@@ -28,18 +28,18 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const decision = req.body.decision;
     const publicKeyOfRequest = req.body.publicKeyOfRequest;
-    const privateKey = req.body.privateKey;
-    if (!decision || !publicKeyOfRequest || !privateKey) {
-      return res.status(400).json({ ok: false, msg: "decision, publicKeyOfRequest, privateKey is require!" });
+    const privateKeyHex = req.body.privateKeyHex;
+    if (!decision || !publicKeyOfRequest || !privateKeyHex) {
+      return res.status(400).json({ ok: false, msg: "decision, publicKeyOfRequest, privateKeyHex is require!" });
     }
     let opResult;
 
     if (decision !== "accept" && decision != "decline") {
       return res.status(400).json({ ok: false, msg: "decision == accept || decision == decline!" });
     } else if (decision === "accept") {
-      opResult = await voteCli.sendAcceptVote(publicKeyOfRequest, privateKey);
+      opResult = await voteCli.sendAcceptVote(publicKeyOfRequest, privateKeyHex);
     } else if (decision === "decline") {
-      opResult = await voteCli.sendDeclineVote(publicKeyOfRequest, privateKey);
+      opResult = await voteCli.sendDeclineVote(publicKeyOfRequest, privateKeyHex);
     }
 
     if (opResult.ok) {
