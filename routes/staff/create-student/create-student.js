@@ -48,7 +48,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
       res.json(insertStudentHistoryResult.ops[0]);
     });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 
@@ -58,7 +58,7 @@ router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await studentHistoryCol.find({}).toArray();
     res.json(result);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 

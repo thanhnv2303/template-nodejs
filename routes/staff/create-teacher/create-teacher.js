@@ -50,7 +50,7 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
       await createTeacherOnBlockchain(req.body.privateKeyHex, profiles);
     });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 
@@ -65,7 +65,7 @@ router.get("/teacher-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await teacherHistoryCol.find({}).toArray();
     res.json(result);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 

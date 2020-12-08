@@ -49,7 +49,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       // TODO: send to blockchain too
     });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 

@@ -39,7 +39,7 @@ router.post("/upload-subjects", authen, author(ROLE.STAFF), upload.single("excel
       res.json(result.ops);
     });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 

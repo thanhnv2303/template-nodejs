@@ -20,7 +20,7 @@ router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
     }
     res.json(votes);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 
@@ -53,7 +53,7 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
       res.status(500).json(opResult);
     }
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 

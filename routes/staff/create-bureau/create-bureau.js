@@ -50,7 +50,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       await createBureauOnBlockchain(req.body.privateKeyHex, profiles);
     });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 
@@ -65,7 +65,7 @@ router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await bureauHistoryCol.find({}).toArray();
     res.json(result);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 

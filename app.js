@@ -13,6 +13,9 @@ app.use("/acc", accRouter);
 const staffRouter = require("./routes/staff/staff-router");
 app.use("/staff", staffRouter);
 
+const teacherRouter = require("./routes/teacher/teacher-router");
+app.use("/teacher", teacherRouter);
+
 app.listen(8003, () => {
   console.log("App listening on port 8003!");
 });

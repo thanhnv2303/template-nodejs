@@ -44,7 +44,7 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
       // provide priviledge for teacher to write point of that class
     });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 

@@ -62,7 +62,7 @@ router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"
       res.json(opResult);
     }
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json(error.toString());
   }
 });
 
