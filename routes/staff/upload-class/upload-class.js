@@ -68,11 +68,9 @@ async function getTeacherById(teacherId) {
 
 async function getStudentsByIds(studentIdsString) {
   const studentHistoryCol = (await connection).db().collection("StudentHistory");
-  const studentIds = studentIdsString.split(",");
+  const studentIds = studentIdsString.split(",").map((sid) => sid.trim());
   const studentPromises = studentIds.map(async (studentId) => {
-    console.log(studentId);
     const doc = await studentHistoryCol.findOne({ "profiles.studentId": studentId }, { projection: { "profiles.$": 1, _id: 0 } });
-    console.log(doc);
     return doc ? doc.profiles[0] : null;
   });
   return Promise.all(studentPromises);

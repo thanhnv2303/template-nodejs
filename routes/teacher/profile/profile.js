@@ -11,10 +11,8 @@ router.get("/teacher-profile", authen, author(ROLE.TEACHER), async (req, res) =>
   try {
     const col = (await connection).db().collection("TeacherHistory");
     const doc = await col.findOne({ "profiles.uid": new ObjectID(req.user.uid) }, { projection: { "profiles.$": 1, _id: 0 } });
-    console.log(doc);
     res.json(doc ? doc.profiles[0] : null);
   } catch (error) {
-    console.log(error);
     res.status(500).json(error.toString());
   }
 });
