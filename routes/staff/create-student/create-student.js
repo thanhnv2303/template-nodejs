@@ -34,7 +34,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
         const newAccNode = hdKey.derive(path);
         const privateKeyBuf = newAccNode.privateKey;
         let student = {
-          studentId: row[0],
+          studentId: row[0].toString(),
           name: row[1],
           birthday: row[2],
           class: row[3],
