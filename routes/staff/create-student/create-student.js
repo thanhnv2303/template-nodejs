@@ -11,6 +11,7 @@ const { ROLE } = require("../../acc/ROLE");
 
 const bip39 = require("bip39");
 const HdKey = require("hdkey");
+const secp256k1 = require("secp256k1");
 
 const { Duplex } = require("stream");
 function bufferToStream(myBuuffer) {
@@ -31,14 +32,14 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
       const students = rows.map((row, index) => {
         const path = "m/44'/0'/0'/0/" + index;
         const newAccNode = hdKey.derive(path);
-
+        const privateKeyBuf = newAccNode.privateKey;
         let student = {
           studentId: row[0],
           name: row[1],
           birthday: row[2],
           class: row[3],
-          publicKey: newAccNode.publicKey.toString("base64"),
-          privateKey: newAccNode.privateKey.toString("base64"),
+          publicKey: Buffer.from(secp256k1.publicKeyCreate(privateKeyBuf, false).slice(1)).toString("hex"),
+          privateKey: privateKeyBuf.toString("hex"),
         };
         return student;
       });

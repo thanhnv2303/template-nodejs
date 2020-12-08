@@ -14,4 +14,5 @@ const createTeacherRouter = require("./create-teacher/create-teacher");
 router.use(createTeacherRouter);
 
 router.use(require("./create-student/create-student"));
+router.use(require("./upload-subject/upload-subject"));
 module.exports = router;
