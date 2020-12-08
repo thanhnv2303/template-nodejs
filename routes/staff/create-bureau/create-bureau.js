@@ -27,7 +27,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       // parse excel
       const bureaus = rows.map((row) => {
         let bureau = {
-          bureauId: row[0],
+          bureauId: row[0].toString(),
           name: row[1],
           email: row[2],
           department: row[3],

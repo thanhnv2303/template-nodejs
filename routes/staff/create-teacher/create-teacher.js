@@ -27,7 +27,7 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
       // parse excel
       const teachers = rows.map((row) => {
         let teacher = {
-          teacherId: row[0],
+          teacherId: row[0].toString(),
           name: row[1],
           email: row[2],
           department: row[3],

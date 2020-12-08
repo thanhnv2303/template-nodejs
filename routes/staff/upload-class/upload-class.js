@@ -25,10 +25,10 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
       // parse excel
       const classesPromises = rows.map(async (row) => {
         let claxx = {
-          semester: row[0],
-          subjectId: row[1],
-          classId: row[2],
-          teacherId: row[3],
+          semester: row[0].toString(),
+          subjectId: row[1].toString(),
+          classId: row[2].toString(),
+          teacherId: row[3].toString(),
           studentIds: row[4],
           uploadTimestamp: Date.now(),
           id: uid(),

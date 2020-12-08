@@ -36,7 +36,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
         let student = {
           studentId: row[0].toString(),
           name: row[1],
-          birthday: row[2],
+          birthday: row[2].toString(),
           class: row[3],
           publicKey: Buffer.from(secp256k1.publicKeyCreate(privateKeyBuf, false).slice(1)).toString("hex"),
           privateKey: privateKeyBuf.toString("hex"),

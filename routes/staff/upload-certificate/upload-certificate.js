@@ -26,19 +26,19 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       const certificates = rows.map((row, index) => {
         let certificate = {
           name: row[0],
-          birthday: row[1],
+          birthday: row[1].toString(),
           gender: row[2],
           university: row[3],
           faculty: row[4],
           degree: row[5],
-          gradyear: row[6],
+          gradyear: row[6].toString(),
           level: row[7],
           eduform: row[8],
           issuelocation: row[9],
           issuedate: row[10],
           headmaster: row[11],
-          regisno: row[12],
-          globalregisno: row[13],
+          regisno: row[12].toString(),
+          globalregisno: row[13].toString(),
           uploadTimestamp: Date.now(),
           id: uid(),
         };
