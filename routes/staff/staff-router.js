@@ -16,4 +16,5 @@ router.use(createTeacherRouter);
 router.use(require("./create-student/create-student"));
 router.use(require("./upload-subject/upload-subject"));
 router.use(require("./upload-class/upload-class"));
+router.use(require("./upload-certificate/upload-certificate"));
 module.exports = router;

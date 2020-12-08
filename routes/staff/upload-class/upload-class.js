@@ -23,14 +23,14 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
       // skip header
       rows.shift();
       // parse excel
-      const classes = rows.map(async (row) => {
+      const classesPromises = rows.map(async (row) => {
         let claxx = {
           semester: row[0],
           subjectId: row[1],
           classId: row[2],
           teacherId: row[3],
           studentIds: row[4],
-          timestamp: Date.now(),
+          uploadTimestamp: Date.now(),
           id: uid(),
         };
         claxx.subject = await getSubjectById(claxx.subjectId);
@@ -38,8 +38,10 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
         claxx.students = await getStudentsByIds(claxx.studentIds);
         return claxx;
       });
+      const classes = await Promise.all(classesPromises);
       const result = await classCol.insertMany(classes);
       res.json(result.ops);
+      // provide priviledge for teacher to write point of that class
     });
   } catch (error) {
     res.status(500).json(error);
@@ -48,7 +50,7 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
 
 router.get("/classes", authen, author(ROLE.STAFF), async (req, res) => {
   const classCol = (await connection).db().collection("Class");
-  const docs = await classCol.find({}).sort({ timestamp: -1 }).toArray();
+  const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
   res.json(docs);
 });
 
@@ -66,6 +68,14 @@ async function getTeacherById(teacherId) {
 
 async function getStudentsByIds(studentIdsString) {
   const studentHistoryCol = (await connection).db().collection("StudentHistory");
+  const studentIds = studentIdsString.split(",");
+  const studentPromises = studentIds.map(async (studentId) => {
+    console.log(studentId);
+    const doc = await studentHistoryCol.findOne({ "profiles.studentId": studentId }, { projection: { "profiles.$": 1, _id: 0 } });
+    console.log(doc);
+    return doc ? doc.profiles[0] : null;
+  });
+  return Promise.all(studentPromises);
 }
 
 module.exports = router;
