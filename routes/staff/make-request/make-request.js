@@ -21,8 +21,8 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
 
 router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   try {
-    delete req.body._id;
-    const profile = req.body;
+    delete req.body.profile._id;
+    const profile = req.body.profile;
     profile.uid = req.user.uid;
     const col = (await connection).db().collection(PROFILE);
 
@@ -37,7 +37,7 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
     }
 
     // forward to sawtooth-cli to make tx
-    const makeTxOp = await sawtoothCli.makeJoinRequest(profile);
+    const makeTxOp = await sawtoothCli.makeJoinRequest(profile, req.body.privateKeyHex);
     if (makeTxOp.ok) {
       await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting" } }, { upsert: true });
       res.json({ ok: true });

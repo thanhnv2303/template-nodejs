@@ -1,11 +1,11 @@
-async function makeJoinRequest(profile) {
+async function makeJoinRequest(profile, privateKeyHex) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const rd = Math.floor(Math.random() * 10);
-      if (rd % 2 == 0) {
+      if (rd % 3 == 0) {
         resolve({ ok: true });
       } else {
-        resolve({ ok: false });
+        resolve({ ok: false, msg: "error" });
       }
     }, 1500);
   });
