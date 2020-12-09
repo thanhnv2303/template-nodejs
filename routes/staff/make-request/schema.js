@@ -7,13 +7,13 @@ const profileSchema = Joi.object({
   nameInEnglish: Joi.string().required(),
   address: Joi.string(),
   email: Joi.string().email(),
-  phone: Joi.string().pattern(/(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/),
-  // TODO: use valid on phone
-  // phone: Joi.string(),
+  // phone: Joi.string().pattern(/(03|07|08|09|01[2|6|8|9])+([0-9]{8})\b/),
+  // FIXME: use valid on phone
+  phone: Joi.string(),
+  // TODO: valide pubkey too
   pubkey: Joi.string(),
   description: Joi.string().max(1000),
   imgSrc: Joi.string(),
-  level: Joi.string(),
 });
 
 module.exports = { profileSchema };

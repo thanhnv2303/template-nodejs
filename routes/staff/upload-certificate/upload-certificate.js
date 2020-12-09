@@ -8,7 +8,6 @@ const connection = require("../../../db");
 const { ROLE } = require("../../acc/ROLE");
 
 const { Duplex } = require("stream");
-const { uid } = require("uid");
 function bufferToStream(myBuuffer) {
   let tmp = new Duplex();
   tmp.push(myBuuffer);
@@ -40,7 +39,6 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
           regisno: row[12].toString(),
           globalregisno: row[13].toString(),
           uploadTimestamp: Date.now(),
-          id: uid(),
         };
         return certificate;
       });

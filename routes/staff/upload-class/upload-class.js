@@ -8,7 +8,6 @@ const connection = require("../../../db");
 const { ROLE } = require("../../acc/ROLE");
 
 const { Duplex } = require("stream");
-const { uid } = require("uid");
 function bufferToStream(myBuuffer) {
   let tmp = new Duplex();
   tmp.push(myBuuffer);
@@ -29,12 +28,14 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
           subjectId: row[1].toString(),
           classId: row[2].toString(),
           teacherId: row[3].toString(),
-          studentIds: row[4],
+          bureauId: row[4].toString(),
+          studentIds: row[5],
           uploadTimestamp: Date.now(),
-          id: uid(),
         };
+        // join on write, read-ready pattern
         claxx.subject = await getSubjectById(claxx.subjectId);
         claxx.teacher = await getTeacherById(claxx.teacherId);
+        claxx.bureau = await getBureauById(claxx.bureauId);
         claxx.students = await getStudentsByIds(claxx.studentIds);
         return claxx;
       });
@@ -60,6 +61,11 @@ async function getSubjectById(subjectId) {
   return subjectCol.findOne({ subjectId });
 }
 
+async function getBureauById(bureauId) {
+  const bureauHistoryCol = (await connection).db().collection("BureauHistory");
+  const doc = await bureauHistoryCol.findOne({ "profiles.bureauId": bureauId }, { projection: { "profiles.$": 1, _id: 0 } });
+  return doc ? doc.profiles[0] : null;
+}
 async function getTeacherById(teacherId) {
   const teacherHistoryCol = (await connection).db().collection("TeacherHistory");
   const doc = await teacherHistoryCol.findOne({ "profiles.teacherId": teacherId }, { projection: { "profiles.$": 1, _id: 0 } });

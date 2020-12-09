@@ -8,7 +8,6 @@ const connection = require("../../../db");
 const { ROLE } = require("../../acc/ROLE");
 
 const { Duplex } = require("stream");
-const { uid } = require("uid");
 function bufferToStream(myBuuffer) {
   let tmp = new Duplex();
   tmp.push(myBuuffer);
@@ -31,7 +30,6 @@ router.post("/upload-subjects", authen, author(ROLE.STAFF), upload.single("excel
           credit: row[3],
           note: row[4],
           uploadTimestamp: Date.now(),
-          id: uid(),
         };
         return subject;
       });

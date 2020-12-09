@@ -12,6 +12,7 @@ router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
     const state = req.query.state;
     let votes;
     if (state === "new") {
+      // TODO: use "voting" instead of "new"??
       votes = await col.find({ state: "new" }).toArray();
     } else if (state === "old") {
       votes = await col.find({ state: { $in: ["accepted", "declined"] } }).toArray();
