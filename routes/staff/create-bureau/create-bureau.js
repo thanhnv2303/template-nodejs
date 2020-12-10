@@ -41,13 +41,18 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
         bureau.hashedPassword = hashedPassword;
         return bureau;
       });
-
+      // TODO: send public key of bureau to cli to make txs, then add txid, address, timestamp to bureau object -> insert to db!
+      // const opResponse = await createBureauOnBlockchain(req.body.privateKeyHex, profiles);
+      // if (opResponse.ok) {
+      //   // get array of txid, adresss, timstamp, ...
+      // } else {
+      //   res.json(opResponse);
+      // }
       const accounts = bureaus.map((bureau) => ({ email: bureau.email, hashedPassword: bureau.hashedPassword, role: ROLE.BUREAU }));
       const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
       const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index] }));
       const insertbureauHistoryResult = await bureauHistoryCol.insertOne({ time: new Date().toISOString().split("T")[0], profiles: profiles });
       res.json(insertbureauHistoryResult.ops[0]);
-      await createBureauOnBlockchain(req.body.privateKeyHex, profiles);
     });
   } catch (error) {
     res.status(500).json(error.toString());

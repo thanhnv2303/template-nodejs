@@ -42,9 +42,9 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
         };
         return certificate;
       });
+      // TODO: send to blockchain first
       const result = await subjectCol.insertMany(certificates);
       res.json(result.ops);
-      // TODO: send to blockchain too
     });
   } catch (error) {
     res.status(500).json(error.toString());

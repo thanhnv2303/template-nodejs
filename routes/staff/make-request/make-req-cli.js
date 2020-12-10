@@ -7,7 +7,7 @@ async function makeJoinRequest(profile, privateKeyHex) {
       } else {
         resolve({ ok: false, msg: "error" });
       }
-    }, 1500);
+    }, 1200);
   });
 }
 

@@ -40,9 +40,10 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
         return claxx;
       });
       const classes = await Promise.all(classesPromises);
+      // provide priviledge for teacher to write point of that class
+      // get ids, addresses, ....
       const result = await classCol.insertMany(classes);
       res.json(result.ops);
-      // provide priviledge for teacher to write point of that class
     });
   } catch (error) {
     res.status(500).json(error.toString());
