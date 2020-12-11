@@ -8,6 +8,7 @@ const connection = require("../../../db");
 const generator = require("generate-password");
 const bcrypt = require("bcryptjs");
 const { ROLE } = require("../../acc/ROLE");
+const axios = require("axios").default;
 
 const { Duplex } = require("stream");
 function bufferToStream(myBuuffer) {
@@ -25,7 +26,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       // skip header
       rows.shift();
       // parse excel
-      const bureaus = rows.map((row) => {
+      let bureaus = rows.map((row) => {
         let bureau = {
           bureauId: row[0].toString(),
           name: row[1],
@@ -33,31 +34,40 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
           department: row[3],
           publicKey: row[4],
         };
-        // create pw
-        let randomPassword = generator.generate({ length: 8, numbers: true });
-        bureau.firstTimePassword = randomPassword;
-        const salt = bcrypt.genSaltSync();
-        let hashedPassword = bcrypt.hashSync(randomPassword, salt);
-        bureau.hashedPassword = hashedPassword;
         return bureau;
       });
-      // TODO: send public key of bureau to cli to make txs, then add txid, address, timestamp to bureau object -> insert to db!
-      // const opResponse = await createBureauOnBlockchain(req.body.privateKeyHex, profiles);
-      // if (opResponse.ok) {
-      //   // get array of txid, adresss, timstamp, ...
-      // } else {
-      //   res.json(opResponse);
-      // }
-      // TODO: check if that account email exists!
-      const accounts = bureaus.map((bureau) => ({ email: bureau.email, hashedPassword: bureau.hashedPassword, role: ROLE.BUREAU }));
-      const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
-      const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index] }));
-      const insertbureauHistoryResult = await bureauHistoryCol.insertOne({
-        time: new Date().toISOString().split("T")[0],
-        profiles: profiles,
-        uid: req.user.uid,
-      });
-      res.json(insertbureauHistoryResult.ops[0]);
+
+      // prepare data fit to interface
+      const profilesOnBkc = bureaus.map((bureau) => ({ ...bureau, email: null }));
+      // send to bkc
+      const response = await createBureauOnBlockchain(req.body.privateKeyHex, profilesOnBkc);
+      if (response.ok) {
+        // create pw
+        bureaus = bureaus.map((bureau) => {
+          let randomPassword = generator.generate({ length: 8, numbers: true });
+          bureau.firstTimePassword = randomPassword;
+          const salt = bcrypt.genSaltSync();
+          let hashedPassword = bcrypt.hashSync(randomPassword, salt);
+          bureau.hashedPassword = hashedPassword;
+          bureau.role = ROLE.BUREAU;
+          return bureau;
+        });
+        // create accounts
+        // TODO: check if emails exits
+        const accounts = bureaus.map((bureau) => ({ email: bureau.email, hashedPassword: bureau.hashedPassword, role: bureau.role }));
+        const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
+        const txids = response.txids;
+        const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index], txid: txids[index] }));
+        // create history
+        const insertbureauHistoryResult = await bureauHistoryCol.insertOne({
+          time: new Date().toISOString().split("T")[0],
+          profiles: profiles,
+          uid: req.user.uid,
+        });
+        res.json(insertbureauHistoryResult.ops[0]);
+      } else {
+        res.status(502).json({ msg: "Không thể tạo các transaction, vui lòng thử lại sau!" });
+      }
     });
   } catch (error) {
     res.status(500).json(error.toString());
@@ -65,8 +75,11 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
 });
 
 // Talk to sawtooth-cli
-async function createBureauOnBlockchain(privateKeyHex, bureausJson) {
-  return Promise.resolve({ ok: true });
+async function createBureauOnBlockchain(privateKeyHex, profiles) {
+  // const res = await axios.post("/create_teacher", { privateKeyHex, profiles });
+  // return res.data;
+  const txids = profiles.map((profile, index) => "7968acaae3dbda81a951f631bfd2" + index);
+  return { ok: true, txids };
 }
 
 router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {
