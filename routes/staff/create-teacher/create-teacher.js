@@ -20,6 +20,10 @@ function bufferToStream(myBuuffer) {
 
 router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
+    const uniProfileCol = (await connection).db().collection("UniversityProfile");
+    const staffUID = req.user.uid;
+    const universityPublicKey = (await uniProfileCol.findOne({ uid: staffUID })).pubkey;
+
     const accCol = (await connection).db().collection("Account");
     const teacherHistoryCol = (await connection).db().collection("TeacherHistory");
     readXlsxFile(bufferToStream(req.file.buffer)).then(async (rows) => {
@@ -33,6 +37,7 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
           email: row[2],
           department: row[3],
           publicKey: row[4],
+          universityPublicKey,
         };
         return teacher;
       });
