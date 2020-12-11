@@ -48,6 +48,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       // } else {
       //   res.json(opResponse);
       // }
+      // TODO: check if that account email exists!
       const accounts = bureaus.map((bureau) => ({ email: bureau.email, hashedPassword: bureau.hashedPassword, role: ROLE.BUREAU }));
       const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
       const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index] }));
