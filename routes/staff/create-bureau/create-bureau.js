@@ -66,7 +66,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
         });
         res.json(insertbureauHistoryResult.ops[0]);
       } else {
-        res.status(502).json({ msg: "Không thể tạo các transaction, vui lòng thử lại sau!" });
+        res.status(502).json({ msg: "Không thể tạo các transaction, vui lòng thử lại sau: " + response.msg });
       }
     });
   } catch (error) {

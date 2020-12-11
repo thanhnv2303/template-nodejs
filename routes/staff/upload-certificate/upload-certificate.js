@@ -6,6 +6,8 @@ const readXlsxFile = require("read-excel-file/node");
 const { authen, author } = require("../../acc/protect-middleware");
 const connection = require("../../../db");
 const { ROLE } = require("../../acc/ROLE");
+const axios = require("axios").default;
+const ecies = require("ecies-geth");
 
 const { Duplex } = require("stream");
 function bufferToStream(myBuuffer) {
@@ -22,7 +24,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       // skip header
       rows.shift();
       // parse excel
-      const certificates = rows.map((row, index) => {
+      let certificatePromises = rows.map(async (row) => {
         let certificate = {
           name: row[0],
           birthday: row[1].toString(),
@@ -38,19 +40,49 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
           headmaster: row[11],
           regisno: row[12].toString(),
           globalregisno: row[13].toString(),
-          uploadTimestamp: Date.now(),
+          studentId: row[14].toString(),
+          // uploadTimestamp: Date.now(),
           uid: req.user.uid,
         };
+        const student = await getStudentByStudentId(certificate.studentId);
+        certificate.studentPublicKey = student.publicKey;
         return certificate;
       });
-      // TODO: send to blockchain first
-      const result = await subjectCol.insertMany(certificates);
-      res.json(result.ops);
+      let certificates = await Promise.all(certificatePromises);
+
+      // encrypt data
+      let cipherPromises = certificates.map(async (cert) => {
+        const publicKeyHex65 = "04" + cert.studentPublicKey;
+        const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(cert)))).toString("hex");
+        return cipher;
+      });
+      const ciphers = await Promise.all(cipherPromises);
+      const payload = certificates.map((cert, index) => ({
+        globalregisno: cert.globalregisno,
+        studentPublicKey: cert.studentPublicKey,
+        cipher: ciphers[index],
+      }));
+      const response = await axios.post("/create_record", { privateKeyHex: req.body.privateKeyHex, certificates: payload });
+      if (response.ok) {
+        const txids = response.txids;
+        const adx = response.sawtoothStateAddresses;
+        certificates = certificates.map((cert, index) => ({ ...cert, txid: txids[index], sawtoothStateAddress: adx[index] }));
+        const result = await subjectCol.insertMany(certificates);
+        res.json(result.ops);
+      } else {
+        res.status(502).json({ ok: false, msg: response.mgs });
+      }
     });
   } catch (error) {
     res.status(500).json(error.toString());
   }
 });
+
+async function getStudentByStudentId(studentId) {
+  const studentHistoryCol = (await connection).db().collection("StudentHistory");
+  const doc = await studentHistoryCol.findOne({ "profiles.studentId": studentId }, { projection: { "profiles.$": 1, _id: 0 } });
+  return doc ? doc.profiles[0] : null;
+}
 
 router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
   const subjectCol = (await connection).db().collection("Certificate");

@@ -50,7 +50,7 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
       res.json({ ok: true, txid: response.txid });
     } else {
       await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
-      res.json({ ok: false, msg: response.msg });
+      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + response.msg });
     }
   } catch (err) {
     res.status(500).json(err.toString());
