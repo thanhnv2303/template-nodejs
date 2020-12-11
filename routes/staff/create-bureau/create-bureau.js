@@ -51,7 +51,11 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       const accounts = bureaus.map((bureau) => ({ email: bureau.email, hashedPassword: bureau.hashedPassword, role: ROLE.BUREAU }));
       const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
       const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index] }));
-      const insertbureauHistoryResult = await bureauHistoryCol.insertOne({ time: new Date().toISOString().split("T")[0], profiles: profiles });
+      const insertbureauHistoryResult = await bureauHistoryCol.insertOne({
+        time: new Date().toISOString().split("T")[0],
+        profiles: profiles,
+        uid: req.user.uid,
+      });
       res.json(insertbureauHistoryResult.ops[0]);
     });
   } catch (error) {
@@ -67,7 +71,7 @@ async function createBureauOnBlockchain(privateKeyHex, bureausJson) {
 router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const bureauHistoryCol = (await connection).db().collection("BureauHistory");
-    const result = await bureauHistoryCol.find({}).toArray();
+    const result = await bureauHistoryCol.find({ uid: req.user.uid }).toArray();
     res.json(result);
   } catch (error) {
     res.status(500).json(error.toString());

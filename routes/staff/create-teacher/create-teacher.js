@@ -51,7 +51,11 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
       const accounts = teachers.map((teacher) => ({ email: teacher.email, hashedPassword: teacher.hashedPassword, role: ROLE.TEACHER }));
       const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
       const profiles = teachers.map((teacher, index) => ({ ...teacher, uid: insertedIds[index] }));
-      const insertTeacherHistoryResult = await teacherHistoryCol.insertOne({ time: new Date().toISOString().split("T")[0], profiles: profiles });
+      const insertTeacherHistoryResult = await teacherHistoryCol.insertOne({
+        time: new Date().toISOString().split("T")[0],
+        profiles: profiles,
+        uid: req.user.uid,
+      });
       res.json(insertTeacherHistoryResult.ops[0]);
     });
   } catch (error) {
@@ -67,7 +71,7 @@ async function createTeacherOnBlockchain(privateKeyHex, bureausJson) {
 router.get("/teacher-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const teacherHistoryCol = (await connection).db().collection("TeacherHistory");
-    const result = await teacherHistoryCol.find({}).toArray();
+    const result = await teacherHistoryCol.find({ uid: req.user.uid }).toArray();
     res.json(result);
   } catch (error) {
     res.status(500).json(error.toString());

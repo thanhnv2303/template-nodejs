@@ -31,8 +31,10 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
           bureauId: row[4].toString(),
           studentIds: row[5],
           uploadTimestamp: Date.now(),
+          uid: req.user.uid,
         };
         // join on write, read-ready pattern
+        // TODO: if not found item, --> res to FE to notif user
         claxx.subject = await getSubjectById(claxx.subjectId);
         claxx.teacher = await getTeacherById(claxx.teacherId);
         claxx.bureau = await getBureauById(claxx.bureauId);
@@ -52,7 +54,7 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
 
 router.get("/classes", authen, author(ROLE.STAFF), async (req, res) => {
   const classCol = (await connection).db().collection("Class");
-  const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
+  const docs = await classCol.find({ uid: req.user.uid }).sort({ uploadTimestamp: -1 }).toArray();
   res.json(docs);
 });
 

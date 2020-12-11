@@ -39,6 +39,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
           regisno: row[12].toString(),
           globalregisno: row[13].toString(),
           uploadTimestamp: Date.now(),
+          uid: req.user.uid,
         };
         return certificate;
       });
@@ -53,7 +54,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
 
 router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
   const subjectCol = (await connection).db().collection("Certificate");
-  const docs = await subjectCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
+  const docs = await subjectCol.find({ uid: req.user.uid }).sort({ uploadTimestamp: -1 }).toArray();
   res.json(docs);
 });
 

@@ -19,6 +19,22 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
   }
 });
 
+// not use any more, fetch profile then update voting state instead
+// router.get("/votes", authen, author(ROLE.STAFF), async (req, res) => {
+//   try {
+//     const col = (await connection).db().collection(PROFILE);
+//     const profile = await col.findOne({ uid: req.user.uid });
+//     if (profile.votes) {
+//       res.json(profile.votes);
+//     } else {
+//       res.json([]);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json(error.toString());
+//   }
+// });
+
 router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     delete req.body.profile._id;

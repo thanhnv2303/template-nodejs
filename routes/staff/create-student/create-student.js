@@ -44,7 +44,11 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
         return student;
       });
 
-      const insertStudentHistoryResult = await studentHistoryCol.insertOne({ time: new Date().toISOString().split("T")[0], profiles: students });
+      const insertStudentHistoryResult = await studentHistoryCol.insertOne({
+        time: new Date().toISOString().split("T")[0],
+        profiles: students,
+        uid: req.user.uid,
+      });
       res.json(insertStudentHistoryResult.ops[0]);
     });
   } catch (error) {
@@ -55,7 +59,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
 router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const studentHistoryCol = (await connection).db().collection("StudentHistory");
-    const result = await studentHistoryCol.find({}).toArray();
+    const result = await studentHistoryCol.find({ uid: req.user.uid }).toArray();
     res.json(result);
   } catch (error) {
     res.status(500).json(error.toString());

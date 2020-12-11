@@ -30,6 +30,7 @@ router.post("/upload-subjects", authen, author(ROLE.STAFF), upload.single("excel
           credit: row[3],
           note: row[4],
           uploadTimestamp: Date.now(),
+          uid: req.user.uid,
         };
         return subject;
       });
@@ -43,7 +44,7 @@ router.post("/upload-subjects", authen, author(ROLE.STAFF), upload.single("excel
 
 router.get("/subjects", authen, author(ROLE.STAFF), async (req, res) => {
   const subjectCol = (await connection).db().collection("Subject");
-  const docs = await subjectCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
+  const docs = await subjectCol.find({ uid: req.user.uid }).sort({ uploadTimestamp: -1 }).toArray();
   res.json(docs);
 });
 

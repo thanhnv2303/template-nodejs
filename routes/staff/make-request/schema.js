@@ -14,6 +14,7 @@ const profileSchema = Joi.object({
   pubkey: Joi.string(),
   description: Joi.string().max(1000),
   imgSrc: Joi.string(),
+  votes: Joi.array(),
 });
 
 module.exports = { profileSchema };
