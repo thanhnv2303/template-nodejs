@@ -3,6 +3,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 require("dotenv").config();
+const axios = require("axios").default;
+axios.defaults.baseURL = process.env.REST_API_URL;
 
 const cors = require("cors");
 app.use(cors());
