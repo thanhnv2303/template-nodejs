@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const connection = require("../../../db");
 const COLL_NAME = "VoteRequest";
-const voteCli = require("./vote-cli");
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/ROLE");
+const axios = require("axios").default;
 
 router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -38,16 +38,16 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
     if (decision !== "accept" && decision != "decline") {
       return res.status(400).json({ ok: false, msg: "decision == accept || decision == decline!" });
     } else if (decision === "accept") {
-      opResult = await voteCli.sendAcceptVote(publicKeyOfRequest, privateKeyHex);
+      opResult = await sendAcceptVote(publicKeyOfRequest, privateKeyHex);
     } else if (decision === "decline") {
-      opResult = await voteCli.sendDeclineVote(publicKeyOfRequest, privateKeyHex);
+      opResult = await sendDeclineVote(publicKeyOfRequest, privateKeyHex);
     }
 
     if (opResult.ok) {
       const col = (await connection).db().collection(COLL_NAME);
       const updateResult = await col.updateOne(
         { pubkey: publicKeyOfRequest },
-        { $set: { state: decision === "accept" ? "accepted" : "declined", date: new Date().toISOString().split("T")[0] } }
+        { $set: { state: decision === "accept" ? "accepted" : "declined", date: new Date().toISOString().split("T")[0], txid: opResult.txid } }
       );
       res.json(updateResult);
     } else {
@@ -57,5 +57,17 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
     res.status(500).json(error.toString());
   }
 });
+
+async function sendAcceptVote(publicKeyOfRequest, privateKeyHex) {
+  // const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "accept" });
+  // return res.data
+  return Promise.resolve({ ok: true, txid: "asdf" });
+}
+
+async function sendDeclineVote(publicKeyOfRequest, privateKeyHex) {
+  // const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "decline" });
+  // return res.data
+  return Promise.resolve({ ok: true, txid: "asdfasd" });
+}
 
 module.exports = router;

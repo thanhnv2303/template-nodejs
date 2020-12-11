@@ -6,6 +6,7 @@ const readXlsxFile = require("read-excel-file/node");
 const { authen, author } = require("../../acc/protect-middleware");
 const connection = require("../../../db");
 const { ROLE } = require("../../acc/ROLE");
+const axios = require("axios").default;
 
 const { Duplex } = require("stream");
 function bufferToStream(myBuuffer) {
@@ -30,7 +31,7 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
           teacherId: row[3].toString(),
           bureauId: row[4].toString(),
           studentIds: row[5],
-          uploadTimestamp: Date.now(),
+          // uploadTimestamp: Date.now(),
           uid: req.user.uid,
         };
         // join on write, read-ready pattern
@@ -41,11 +42,19 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
         claxx.students = await getStudentsByIds(claxx.studentIds);
         return claxx;
       });
-      const classes = await Promise.all(classesPromises);
+      let classes = await Promise.all(classesPromises);
       // provide priviledge for teacher to write point of that class
       // get ids, addresses, ....
-      const result = await classCol.insertMany(classes);
-      res.json(result.ops);
+      const payload = classes.map((cls) => ({ classId: cls.classId, teacherPublicKey: cls.teacher.publicKey, bureauPublicKey: cls.bureau.publicKey }));
+      const response = await createClassPriviledgeOnBkc(req.body.privateKeyHex, payload);
+      if (response.ok) {
+        const txids = response.txids;
+        classes = classes.map((clx, index) => ({ ...clx, txid: txids[index] }));
+        const result = await classCol.insertMany(classes);
+        res.json(result.ops);
+      } else {
+        res.status(502).json({ msg: response.msg });
+      }
     });
   } catch (error) {
     res.status(500).json(error.toString());
@@ -83,6 +92,13 @@ async function getStudentsByIds(studentIdsString) {
     return doc ? doc.profiles[0] : null;
   });
   return Promise.all(studentPromises);
+}
+
+async function createClassPriviledgeOnBkc(privateKeyHex, classes) {
+  // const res = await axios.post("/create_class_priviledge", { privateKeyHex, classes });
+  // return res.data;
+  const txids = classes.map((cls, index) => "ba2309d7b8e064a28f0eb55e4" + index);
+  return { ok: true, txids };
 }
 
 module.exports = router;
