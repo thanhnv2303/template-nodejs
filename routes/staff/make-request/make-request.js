@@ -5,7 +5,6 @@ const upload = multer();
 const { authen, author } = require("../../acc/protect-middleware");
 const connection = require("../../../db");
 const { profileSchema } = require("./schema");
-// const sawtoothCli = require("./make-req-cli");
 const { ROLE } = require("../../acc/ROLE");
 const PROFILE = "UniversityProfile";
 const ObjectID = require("mongodb").ObjectID;
@@ -44,15 +43,16 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
     }
 
     // forward to sawtooth-cli to make tx
-    const response = await makeJoinRequest(req.body.privateKeyHex, profile);
-    if (response.ok) {
-      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting" } }, { upsert: true });
-      res.json({ ok: true, txid: response.txid });
-    } else {
+    try {
+      const response = await axios.post("/create_institution", { privateKeyHex: req.body.privateKeyHex, profile });
+      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting", txid: response.transactionId } }, { upsert: true });
+      res.json({ ok: true });
+    } catch (error) {
       await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
-      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + response.msg });
+      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.error });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json(err.toString());
   }
 });
@@ -72,11 +72,5 @@ router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"
     res.status(500).json(error.toString());
   }
 });
-
-async function makeJoinRequest(privateKeyHex, profile) {
-  // const res = await axios.post("/create_institution", { privateKeyHex, profile });
-  // return res.data;
-  return { ok: true, txid: "202ed8d21c2a2e75cd288bb14e2e8a2d940c32cd933" };
-}
 
 module.exports = router;

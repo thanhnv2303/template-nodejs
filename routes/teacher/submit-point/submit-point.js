@@ -20,7 +20,7 @@ router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
       const opResult = await classCol.updateOne({ classId: claxx.classId }, { $set: { students: updatedClass.students } });
       res.json(opResult);
     } else {
-      res.status(502).json(response.msg);
+      res.status(502).json(response.error);
     }
   } catch (error) {
     res.status(500).json(error.toString());
@@ -60,8 +60,15 @@ async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
 }
 
 async function postPointToBkc(payload) {
-  const res = await axios.post("/create_record", payload);
-  return res.data;
+  // const res = await axios.post("/create_record", payload);
+  // return res.data;
+  const txids = [];
+  const ads = [];
+  for (let i = 0; i <= payload.points.length - 1; i++) {
+    txids.push("52ce95de3b7d36b000e029140" + i);
+    ads.push("e50eebff10b2cd1f47d3e" + i);
+  }
+  return { ok: true, txids, sawtoothStateAddresses: ads };
 }
 
 function addTxidnAddress(claxx, txids, ads) {

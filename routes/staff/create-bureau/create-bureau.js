@@ -43,10 +43,10 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       });
 
       // prepare data fit to interface
-      const profilesOnBkc = bureaus.map((bureau) => ({ ...bureau, email: null }));
+      const payload = bureaus.map((bureau) => ({ ...bureau, email: null }));
       // send to bkc
-      const response = await createBureauOnBlockchain(req.body.privateKeyHex, profilesOnBkc);
-      if (response.ok) {
+      try {
+        const response = await axios.post("/create_edu_officers", { privateKeyHex: req.body.privateKeyHex, profiles: payload });
         // create pw
         bureaus = bureaus.map((bureau) => {
           let randomPassword = generator.generate({ length: 8, numbers: true });
@@ -61,8 +61,11 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
         // TODO: check if emails exits
         const accounts = bureaus.map((bureau) => ({ email: bureau.email, hashedPassword: bureau.hashedPassword, role: bureau.role }));
         const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
-        const txids = response.txids;
-        const profiles = bureaus.map((bureau, index) => ({ ...bureau, uid: insertedIds[index], txid: txids[index] }));
+        const profiles = bureaus.map((bureau, index) => ({
+          ...bureau,
+          uid: insertedIds[index],
+          txid: getTransactionIdByBureauId(response.data, bureau.bureauId),
+        }));
         // create history
         const insertbureauHistoryResult = await bureauHistoryCol.insertOne({
           time: new Date().toISOString().split("T")[0],
@@ -70,8 +73,8 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
           uid: req.user.uid,
         });
         res.json(insertbureauHistoryResult.ops[0]);
-      } else {
-        res.status(502).json({ msg: "Không thể tạo các transaction, vui lòng thử lại sau: " + response.msg });
+      } catch (error) {
+        res.status(502).json({ msg: "Không thể tạo các transaction, vui lòng thử lại sau: " + error.response.data.error });
       }
     });
   } catch (error) {
@@ -79,12 +82,10 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
   }
 });
 
-// Talk to sawtooth-cli
-async function createBureauOnBlockchain(privateKeyHex, profiles) {
-  // const res = await axios.post("/create_teacher", { privateKeyHex, profiles });
-  // return res.data;
-  const txids = profiles.map((profile, index) => "7968acaae3dbda81a951f631bfd2" + index);
-  return { ok: true, txids };
+function getTransactionIdByBureauId(data, teacherId) {
+  const txs = data.transactions;
+  const tx = txs.find((tx) => tx.teacherId === teacherId);
+  return tx.transactionId;
 }
 
 router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {

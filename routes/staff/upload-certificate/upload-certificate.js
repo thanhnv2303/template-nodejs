@@ -27,7 +27,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       let certificatePromises = rows.map(async (row) => {
         let certificate = {
           name: row[0],
-          birthday: row[1].toString(),
+          birthday: row[1].toISOString().split("T")[0],
           gender: row[2],
           university: row[3],
           faculty: row[4],
@@ -62,15 +62,14 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
         studentPublicKey: cert.studentPublicKey,
         cipher: ciphers[index],
       }));
-      const response = await axios.post("/create_record", { privateKeyHex: req.body.privateKeyHex, certificates: payload });
-      if (response.ok) {
-        const txids = response.txids;
-        const adx = response.sawtoothStateAddresses;
-        certificates = certificates.map((cert, index) => ({ ...cert, txid: txids[index], sawtoothStateAddress: adx[index] }));
+      // post to bkc
+      try {
+        const response = await axios.post("/create_certs", { privateKeyHex: req.body.privateKeyHex, certificates: payload });
+        certificates = certificates.map((cert) => ({ ...cert, txid: getTxidByGlobalregisno(response.data, cert.globalregisno) }));
         const result = await subjectCol.insertMany(certificates);
         res.json(result.ops);
-      } else {
-        res.status(502).json({ ok: false, msg: response.mgs });
+      } catch (error) {
+        res.status(502).json({ msg: "Không thể tạo tx: " + error.response.data.error });
       }
     });
   } catch (error) {
@@ -82,6 +81,12 @@ async function getStudentByStudentId(studentId) {
   const studentHistoryCol = (await connection).db().collection("StudentHistory");
   const doc = await studentHistoryCol.findOne({ "profiles.studentId": studentId }, { projection: { "profiles.$": 1, _id: 0 } });
   return doc ? doc.profiles[0] : null;
+}
+
+function getTxidByGlobalregisno(data, grn) {
+  const txs = data.transactions;
+  const tx = txs.find((tx) => (tx.globalregisno = grn));
+  return tx.transactionId;
 }
 
 router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {

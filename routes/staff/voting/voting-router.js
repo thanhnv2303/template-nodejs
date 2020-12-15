@@ -12,8 +12,7 @@ router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
     const state = req.query.state;
     let votes;
     if (state === "new") {
-      // TODO: use "voting" instead of "new"??
-      votes = await col.find({ state: "new" }).toArray();
+      votes = await col.find({ state: "new", uid: { $ne: req.user.uid } }).toArray();
     } else if (state === "old") {
       votes = await col.find({ state: { $in: ["accepted", "declined"] } }).toArray();
     } else {
@@ -59,15 +58,15 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
 });
 
 async function sendAcceptVote(publicKeyOfRequest, privateKeyHex) {
-  // const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "accept" });
-  // return res.data
-  return Promise.resolve({ ok: true, txid: "asdf" });
+  const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "accept" });
+  return res.data;
+  // return Promise.resolve({ ok: true, txid: "asdf" });
 }
 
 async function sendDeclineVote(publicKeyOfRequest, privateKeyHex) {
-  // const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "decline" });
-  // return res.data
-  return Promise.resolve({ ok: true, txid: "asdfasd" });
+  const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "decline" });
+  return res.data;
+  // return Promise.resolve({ ok: true, txid: "asdfasd" });
 }
 
 module.exports = router;
