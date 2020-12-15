@@ -58,9 +58,13 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
 });
 
 async function sendAcceptVote(publicKeyOfRequest, privateKeyHex) {
-  const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "accept" });
-  return res.data;
-  // return Promise.resolve({ ok: true, txid: "asdf" });
+  try {
+    const res = await axios.post("/create_vote", { publicKeyOfRequest, privateKeyHex, decision: "accept" });
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    return error.response.data;
+  }
 }
 
 async function sendDeclineVote(publicKeyOfRequest, privateKeyHex) {

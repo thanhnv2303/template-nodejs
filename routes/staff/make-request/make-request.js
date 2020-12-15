@@ -45,11 +45,11 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
     // forward to sawtooth-cli to make tx
     try {
       const response = await axios.post("/create_institution", { privateKeyHex: req.body.privateKeyHex, profile });
-      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting", txid: response.transactionId } }, { upsert: true });
+      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting", txid: response.data.transactionId } }, { upsert: true });
       res.json({ ok: true });
     } catch (error) {
       await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
-      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.error });
+      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.data.error });
     }
   } catch (err) {
     console.log(err);

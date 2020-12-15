@@ -32,7 +32,7 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
 
       try {
         const response = await axios.post("/create_teachers", { privateKeyHex: req.body.privateKeyHex, profiles: payload });
-        teachers = addAccountInfo(teachers);
+        teachers = addPassword(teachers);
         // TODO: check if emails exits
         const accounts = teachers.map((teacher) => ({ email: teacher.email, hashedPassword: teacher.hashedPassword, role: teacher.role }));
         const insertedIds = (await accCol.insertMany(accounts)).insertedIds;
@@ -70,7 +70,7 @@ function parseTeacher(rows, universityPublicKey) {
   }));
 }
 
-function addAccountInfo(teachers) {
+function addPassword(teachers) {
   return teachers.map((teacher) => {
     let randomPassword = generator.generate({ length: 8, numbers: true });
     teacher.firstTimePassword = randomPassword;
