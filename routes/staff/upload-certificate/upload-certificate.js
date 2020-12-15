@@ -45,21 +45,22 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
           uid: req.user.uid,
         };
         const student = await getStudentByStudentId(certificate.studentId);
-        certificate.studentPublicKey = student.publicKey;
+        certificate.studentPublicKey33 = student.publicKey;
+        certificate.studentPublicKey65 = student.publicKey65;
         return certificate;
       });
       let certificates = await Promise.all(certificatePromises);
 
       // encrypt data
       let cipherPromises = certificates.map(async (cert) => {
-        const publicKeyHex65 = "04" + cert.studentPublicKey;
+        const publicKeyHex65 = cert.studentPublicKey65;
         const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(cert)))).toString("hex");
         return cipher;
       });
       const ciphers = await Promise.all(cipherPromises);
       const payload = certificates.map((cert, index) => ({
         globalregisno: cert.globalregisno,
-        studentPublicKey: cert.studentPublicKey,
+        studentPublicKey: cert.studentPublicKey33,
         cipher: ciphers[index],
       }));
       // post to bkc
@@ -69,6 +70,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
         const result = await subjectCol.insertMany(certificates);
         res.json(result.ops);
       } catch (error) {
+        if (!error.response) return res.status(502).json({ msg: error });
         res.status(502).json({ msg: "Không thể tạo tx: " + error.response.data.error });
       }
     });

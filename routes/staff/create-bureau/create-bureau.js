@@ -74,7 +74,12 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
         });
         res.json(insertbureauHistoryResult.ops[0]);
       } catch (error) {
-        res.status(502).json({ msg: "Không thể tạo các transaction, vui lòng thử lại sau: " + error.response.data.error });
+        console.log(error);
+        if (error.response) {
+          res.status(502).json({ msg: "Không thể tạo các transaction, vui lòng thử lại sau: " + error.response.data.error });
+        } else {
+          res.status(502).json({ msg: error });
+        }
       }
     });
   } catch (error) {
@@ -82,9 +87,9 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
   }
 });
 
-function getTransactionIdByBureauId(data, teacherId) {
+function getTransactionIdByBureauId(data, bureauId) {
   const txs = data.transactions;
-  const tx = txs.find((tx) => tx.teacherId === teacherId);
+  const tx = txs.find((tx) => tx.bureauId === bureauId);
   return tx.transactionId;
 }
 

@@ -14,13 +14,14 @@ router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
     // require teacher != null
     const universityPublicKey = claxx.teacher.universityPublicKey;
     const payload = await preparePayload(privateKeyHex, universityPublicKey, claxx);
-    const response = await postPointToBkc(payload);
-    if (response.ok) {
-      const updatedClass = addTxidnAddress(claxx, response.txids, response.sawtoothStateAddresses);
+    try {
+      const response = await axios.post("/create_subjects", payload);
+      const updatedClass = addTxid(claxx, response.data);
       const opResult = await classCol.updateOne({ classId: claxx.classId }, { $set: { students: updatedClass.students } });
       res.json(opResult);
-    } else {
-      res.status(502).json(response.error);
+    } catch (error) {
+      if (error.response) return res.status(502).json({ msg: error.response.data.error });
+      return res.status(502).json({ msg: error });
     }
   } catch (error) {
     res.status(500).json(error.toString());
@@ -51,7 +52,7 @@ async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
       // TODO: if you implement A, A+, B.. and pointBase4 -> then add it here too
     };
     const studentPublicKey = studentAndPoint.publicKey;
-    const publicKeyHex65 = "04" + studentPublicKey;
+    const publicKeyHex65 = studentAndPoint.publicKey65;
     const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(plain)))).toString("hex");
     return { studentPublicKey, cipher };
   });
@@ -59,21 +60,15 @@ async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
   return { privateKeyHex, universityPublicKey, classId, points };
 }
 
-async function postPointToBkc(payload) {
-  // const res = await axios.post("/create_record", payload);
-  // return res.data;
-  const txids = [];
-  const ads = [];
-  for (let i = 0; i <= payload.points.length - 1; i++) {
-    txids.push("52ce95de3b7d36b000e029140" + i);
-    ads.push("e50eebff10b2cd1f47d3e" + i);
-  }
-  return { ok: true, txids, sawtoothStateAddresses: ads };
+function addTxid(claxx, data) {
+  claxx.students = claxx.students.map((studentAndPoint) => ({ ...studentAndPoint, txid: getTxidByStudentPublicKey(data, studentAndPoint.publicKey) }));
+  return claxx;
 }
 
-function addTxidnAddress(claxx, txids, ads) {
-  claxx.students = claxx.students.map((studentAndPoint, index) => ({ ...studentAndPoint, txid: txids[index], sawtoothStateAddress: ads[index] }));
-  return claxx;
+function getTxidByStudentPublicKey(data, studentPublicKey) {
+  const txs = data.transactions;
+  const tx = txs.map((tx) => tx.studenntPublicKey === studentPublicKey);
+  return tx.transactionId;
 }
 
 router.get("/classes/:classId", authen, author(ROLE.TEACHER), async (req, res) => {

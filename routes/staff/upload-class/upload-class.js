@@ -47,12 +47,17 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
       // get ids, addresses, ....
       const payload = classes.map((cls) => ({ classId: cls.classId, teacherPublicKey: cls.teacher.publicKey, bureauPublicKey: cls.bureau.publicKey }));
       try {
-        const response = await axios.post("/create_class_priviledge", { privateKeyHex: req.body.privateKeyHex, classes: payload });
+        const response = await axios.post("/create_classes", { privateKeyHex: req.body.privateKeyHex, classes: payload });
         classes = classes.map((clx) => ({ ...clx, txid: getTxidByClassId(response.data, clx.classId) }));
         const result = await classCol.insertMany(classes);
         res.json(result.ops);
       } catch (error) {
-        res.status(502).json({ msg: "Không thể tạo tx: " + error.response.data.error });
+        console.log(error);
+        if (error.response) {
+          res.status(502).json({ msg: "Không thể tạo tx: " + error.response.data.error });
+        } else {
+          res.status(502).json({ msg: error });
+        }
       }
     });
   } catch (error) {
