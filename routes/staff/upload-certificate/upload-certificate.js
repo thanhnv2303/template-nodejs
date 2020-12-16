@@ -61,6 +61,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       const payload = certificates.map((cert, index) => ({
         globalregisno: cert.globalregisno,
         studentPublicKey: cert.studentPublicKey33,
+        studentPublicKey65: cert.studentPublicKey65,
         cipher: ciphers[index],
       }));
       // post to bkc

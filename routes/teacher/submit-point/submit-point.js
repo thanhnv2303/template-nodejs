@@ -54,7 +54,7 @@ async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
     const studentPublicKey = studentAndPoint.publicKey;
     const publicKeyHex65 = studentAndPoint.publicKey65;
     const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(plain)))).toString("hex");
-    return { studentPublicKey, cipher };
+    return { studentPublicKey, studentPublicKey65: publicKeyHex65, cipher };
   });
   const points = await Promise.all(pointPromises);
   return { privateKeyHex, universityPublicKey, classId, points };
