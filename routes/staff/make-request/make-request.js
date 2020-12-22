@@ -17,9 +17,9 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
     const profile = await col.findOne({ uid: req.user.uid });
     if (!profile) {
       const acc = await accCol.findOne({ _id: new ObjectID(req.user.uid) });
-      return res.json({ email: acc.email });
+      res.json({ email: acc.email });
     }
-    return res.json(profile);
+    res.json(profile);
   } catch (err) {
     res.status(500).json(err.toString());
   }

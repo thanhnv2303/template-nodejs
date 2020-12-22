@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app"
+    "dev": "NODE_ENV=development nodemon app.js",
+    "start": "NODE_ENV=production pm2 -n school_backend  app.js"
   },
   "author": "",
   "license": "ISC",
@@ -22,11 +23,13 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.2",
     "multer": "^1.4.2",
+    "pm2": "^4.5.1",
     "read-excel-file": "^4.1.0",
     "secp256k1": "^4.0.2",
     "uid": "^2.0.0"
   },
   "devDependencies": {
-    "eslint": "^7.14.0"
+    "eslint": "^7.14.0",
+    "nodemon": "^2.0.6"
   }
 }
