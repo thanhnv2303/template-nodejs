@@ -8,6 +8,7 @@ const connection = require("../../../db");
 const { ROLE } = require("../../acc/ROLE");
 const axios = require("axios").default;
 const ecies = require("ecies-geth");
+var crypto = require("crypto");
 
 const { Duplex } = require("stream");
 function bufferToStream(myBuuffer) {
@@ -58,11 +59,14 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
         return cipher;
       });
       const ciphers = await Promise.all(cipherPromises);
+      const hashes = certificates.map((cert) => crypto.createHash("sha256").update(JSON.stringify(cert)).digest("hex"));
       const payload = certificates.map((cert, index) => ({
         globalregisno: cert.globalregisno,
         studentPublicKey: cert.studentPublicKey33,
         studentPublicKey65: cert.studentPublicKey65,
         cipher: ciphers[index],
+        // TODO: remind Thanh to add hash filed too!
+        hash: hashes[index],
       }));
       // post to bkc
       try {
