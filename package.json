@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "NODE_ENV=development nodemon app.js",
+    "dev": "set NODE_ENV=development&& nodemon app.js",
     "start": "NODE_ENV=production pm2 -n school_backend  app.js"
   },
   "author": "",
