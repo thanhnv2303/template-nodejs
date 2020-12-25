@@ -5,25 +5,30 @@ const upload = multer();
 const { authen, author } = require("../../acc/protect-middleware");
 const connection = require("../../../db");
 const { profileSchema } = require("./schema");
-const { ROLE } = require("../../acc/ROLE");
+const { ROLE } = require("../../acc/role");
 const PROFILE = "UniversityProfile";
 const ObjectID = require("mongodb").ObjectID;
 const axios = require("axios").default;
 
-router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) => {
-  try {
-    const col = (await connection).db().collection(PROFILE);
-    const accCol = (await connection).db().collection("Account");
-    const profile = await col.findOne({ uid: req.user.uid });
-    if (!profile) {
-      const acc = await accCol.findOne({ _id: new ObjectID(req.user.uid) });
-      return res.json({ email: acc.email });
+router.get(
+  "/university-profile",
+  authen,
+  author(ROLE.STAFF),
+  async (req, res) => {
+    try {
+      const col = (await connection).db().collection(PROFILE);
+      const accCol = (await connection).db().collection("Account");
+      const profile = await col.findOne({ uid: req.user.uid });
+      if (!profile) {
+        const acc = await accCol.findOne({ _id: new ObjectID(req.user.uid) });
+        return res.json({ email: acc.email });
+      }
+      return res.json(profile);
+    } catch (err) {
+      return res.status(500).json(err.toString());
     }
-    return res.json(profile);
-  } catch (err) {
-    return res.status(500).json(err.toString());
   }
-});
+);
 
 router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -44,12 +49,34 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
 
     // forward to sawtooth-cli to make tx
     try {
-      const response = await axios.post("/create_institution", { privateKeyHex: req.body.privateKeyHex, profile });
-      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting", txid: response.data.transactionId } }, { upsert: true });
+      const response = await axios.post("/create_institution", {
+        privateKeyHex: req.body.privateKeyHex,
+        profile,
+      });
+      await col.updateOne(
+        { uid: req.user.uid },
+        {
+          $set: {
+            ...profile,
+            state: "voting",
+            txid: response.data.transactionId,
+          },
+        },
+        { upsert: true }
+      );
       res.json({ ok: true });
     } catch (error) {
-      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
-      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.data.error });
+      await col.updateOne(
+        { uid: req.user.uid },
+        { $set: { ...profile, state: "fail" } },
+        { upsert: true }
+      );
+      res.json({
+        ok: false,
+        msg:
+          "Không thể tạo tx, vui lòng thử lại sau: " +
+          error.response.data.error,
+      });
     }
   } catch (err) {
     console.log(err);
@@ -57,20 +84,30 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   }
 });
 
-router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"), async (req, res) => {
-  try {
-    const col = (await connection).db().collection(PROFILE);
-    const imgBase64 = req.file.buffer.toString("base64");
-    const imgSrc = `data:${req.file.mimetype};base64,${imgBase64}`;
-    const opResult = await col.updateOne({ uid: req.user.uid }, { $set: { imgSrc: imgSrc } }, { upsert: true });
-    if (opResult.result.ok) {
-      res.json(imgSrc);
-    } else {
-      res.json(opResult);
+router.post(
+  "/change-avatar",
+  authen,
+  author(ROLE.STAFF),
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      const col = (await connection).db().collection(PROFILE);
+      const imgBase64 = req.file.buffer.toString("base64");
+      const imgSrc = `data:${req.file.mimetype};base64,${imgBase64}`;
+      const opResult = await col.updateOne(
+        { uid: req.user.uid },
+        { $set: { imgSrc: imgSrc } },
+        { upsert: true }
+      );
+      if (opResult.result.ok) {
+        res.json(imgSrc);
+      } else {
+        res.json(opResult);
+      }
+    } catch (error) {
+      res.status(500).json(error.toString());
     }
-  } catch (error) {
-    res.status(500).json(error.toString());
   }
-});
+);
 
 module.exports = router;
