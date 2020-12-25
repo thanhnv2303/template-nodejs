@@ -111,7 +111,7 @@ router.post("/fake-submit-point", async (req, res) => {
   const classes = await classCol.find({}).toArray();
   const length = classes.length;
   classes.forEach((clx, index) => {
-    if (index < length - 5) {
+    if (index < 20) {
       clx.students.forEach((student) => {
         student.halfSemesterPoint = Math.floor(Math.random() * 4 + 5);
         student.finalSemesterPoint = Math.floor(Math.random() * 4 + 5);
