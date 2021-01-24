@@ -10,25 +10,20 @@ const PROFILE = "UniversityProfile";
 const ObjectID = require("mongodb").ObjectID;
 const axios = require("axios").default;
 
-router.get(
-  "/university-profile",
-  authen,
-  author(ROLE.STAFF),
-  async (req, res) => {
-    try {
-      const col = (await connection).db().collection(PROFILE);
-      const accCol = (await connection).db().collection("Account");
-      const profile = await col.findOne({ uid: req.user.uid });
-      if (!profile) {
-        const acc = await accCol.findOne({ _id: new ObjectID(req.user.uid) });
-        return res.json({ email: acc.email });
-      }
-      return res.json(profile);
-    } catch (err) {
-      return res.status(500).json(err.toString());
+router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) => {
+  try {
+    const col = (await connection).db().collection(PROFILE);
+    const accCol = (await connection).db().collection("Account");
+    const profile = await col.findOne({ uid: req.user.uid });
+    if (!profile) {
+      const acc = await accCol.findOne({ _id: new ObjectID(req.user.uid) });
+      return res.json({ email: acc.email });
     }
+    return res.json(profile);
+  } catch (err) {
+    return res.status(500).json(err.toString());
   }
-);
+});
 
 router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -66,16 +61,10 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
       );
       res.json({ ok: true });
     } catch (error) {
-      await col.updateOne(
-        { uid: req.user.uid },
-        { $set: { ...profile, state: "fail" } },
-        { upsert: true }
-      );
+      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
       res.json({
         ok: false,
-        msg:
-          "Không thể tạo tx, vui lòng thử lại sau: " +
-          error.response.data.error,
+        msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.data.error,
       });
     }
   } catch (err) {
@@ -84,30 +73,20 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   }
 });
 
-router.post(
-  "/change-avatar",
-  authen,
-  author(ROLE.STAFF),
-  upload.single("avatar"),
-  async (req, res) => {
-    try {
-      const col = (await connection).db().collection(PROFILE);
-      const imgBase64 = req.file.buffer.toString("base64");
-      const imgSrc = `data:${req.file.mimetype};base64,${imgBase64}`;
-      const opResult = await col.updateOne(
-        { uid: req.user.uid },
-        { $set: { imgSrc: imgSrc } },
-        { upsert: true }
-      );
-      if (opResult.result.ok) {
-        res.json(imgSrc);
-      } else {
-        res.json(opResult);
-      }
-    } catch (error) {
-      res.status(500).json(error.toString());
+router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"), async (req, res) => {
+  try {
+    const col = (await connection).db().collection(PROFILE);
+    const imgBase64 = req.file.buffer.toString("base64");
+    const imgSrc = `data:${req.file.mimetype};base64,${imgBase64}`;
+    const opResult = await col.updateOne({ uid: req.user.uid }, { $set: { imgSrc: imgSrc } }, { upsert: true });
+    if (opResult.result.ok) {
+      res.json(imgSrc);
+    } else {
+      res.json(opResult);
     }
+  } catch (error) {
+    res.status(500).json(error.toString());
   }
-);
+});
 
 module.exports = router;
