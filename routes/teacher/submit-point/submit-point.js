@@ -13,22 +13,14 @@ router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
     const claxx = req.body.claxx;
     // require teacher != null
     const universityPublicKey = claxx.teacher.universityPublicKey;
-    const payload = await preparePayload(
-      privateKeyHex,
-      universityPublicKey,
-      claxx
-    );
+    const payload = await preparePayload(privateKeyHex, universityPublicKey, claxx);
     try {
       const response = await axios.post("/create_subjects", payload);
-      const updatedClass = addTxid(claxx, response.data);
-      const opResult = await classCol.updateOne(
-        { classId: claxx.classId },
-        { $set: { students: updatedClass.students } }
-      );
+      const updatedClass = addTxids(claxx, response.data);
+      const opResult = await classCol.updateOne({ classId: claxx.classId }, { $set: { students: updatedClass.students } });
       res.json(opResult);
     } catch (error) {
-      if (error.response)
-        return res.status(502).json({ msg: error.response.data.error });
+      if (error.response) return res.status(502).json({ msg: error.response.data.error });
       return res.status(502).json({ msg: error });
     }
   } catch (error) {
@@ -61,19 +53,14 @@ async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
     };
     const studentPublicKey = studentAndPoint.publicKey;
     const publicKeyHex65 = studentAndPoint.publicKey65;
-    const cipher = (
-      await ecies.encrypt(
-        Buffer.from(publicKeyHex65, "hex"),
-        Buffer.from(JSON.stringify(plain))
-      )
-    ).toString("hex");
+    const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(plain)))).toString("hex");
     return { studentPublicKey, studentPublicKey65: publicKeyHex65, cipher };
   });
   const points = await Promise.all(pointPromises);
   return { privateKeyHex, universityPublicKey, classId, points };
 }
 
-function addTxid(claxx, data) {
+function addTxids(claxx, data) {
   claxx.students = claxx.students.map((studentAndPoint) => ({
     ...studentAndPoint,
     txid: getTxidByStudentPublicKey(data, studentAndPoint.publicKey),
@@ -83,26 +70,21 @@ function addTxid(claxx, data) {
 
 function getTxidByStudentPublicKey(data, studentPublicKey) {
   const txs = data.transactions;
-  const tx = txs.map((tx) => tx.studenntPublicKey === studentPublicKey);
+  const tx = txs.find((tx) => tx.studentPublicKey === studentPublicKey);
   return tx.transactionId;
 }
 
-router.get(
-  "/classes/:classId",
-  authen,
-  author(ROLE.TEACHER),
-  async (req, res) => {
-    try {
-      const classId = req.params.classId;
-      const classCol = (await connection).db().collection("Class");
-      const docs = await classCol.findOne({ classId: classId });
-      res.json(docs);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json(error.toString());
-    }
+router.get("/classes/:classId", authen, author(ROLE.TEACHER), async (req, res) => {
+  try {
+    const classId = req.params.classId;
+    const classCol = (await connection).db().collection("Class");
+    const docs = await classCol.findOne({ classId: classId });
+    res.json(docs);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error.toString());
   }
-);
+});
 
 // FIXME: dev only //
 router.post("/fake-submit-point", async (req, res) => {
@@ -125,22 +107,14 @@ async function fakeSendPoint(privateKeyHex, claxx, res, classCol) {
   try {
     // require teacher != null
     const universityPublicKey = claxx.teacher.universityPublicKey;
-    const payload = await preparePayload(
-      privateKeyHex,
-      universityPublicKey,
-      claxx
-    );
+    const payload = await preparePayload(privateKeyHex, universityPublicKey, claxx);
     try {
       const response = await axios.post("/create_subjects", payload);
       const updatedClass = addTxid(claxx, response.data);
-      const opResult = await classCol.updateOne(
-        { classId: claxx.classId },
-        { $set: { students: updatedClass.students } }
-      );
+      const opResult = await classCol.updateOne({ classId: claxx.classId }, { $set: { students: updatedClass.students } });
       res.json(opResult);
     } catch (error) {
-      if (error.response)
-        return res.status(502).json({ msg: error.response.data.error });
+      if (error.response) return res.status(502).json({ msg: error.response.data.error });
       return res.status(502).json({ msg: error });
     }
   } catch (error) {
