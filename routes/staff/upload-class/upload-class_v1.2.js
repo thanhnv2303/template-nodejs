@@ -82,7 +82,7 @@ router.post("/v1.2/upload-classes", authen, author(ROLE.STAFF), upload.single("e
   }
 });
 
-router.get("/classes", authen, author(ROLE.STAFF), async (req, res) => {
+router.get("/v1.2/classes", authen, author(ROLE.STAFF), async (req, res) => {
   const classCol = (await connection).db().collection("Class");
   // const docs = await classCol.find({ uid: req.user.uid }).sort({ uploadTimestamp: -1 }).toArray();
   const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).toArray();

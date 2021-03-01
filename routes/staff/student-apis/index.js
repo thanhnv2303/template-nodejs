@@ -8,11 +8,12 @@ const { ROLE } = require("../../acc/role");
 const connection = require("../../../db");
 
 const readXlsxFile = require("read-excel-file/node");
-const { parseExcel, preparePayload, addTxid, sendToBKC } = require("./helper");
+const { parseExcel, preparePayload, sendToBKC } = require("./helper");
 const {
   bufferToStream,
   addUniversityPublicKey,
   addKeyPair,
+  addTxid,
   addPwAndHash,
   addRole,
   addUid,
@@ -29,7 +30,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     // const payload = preparePayload(students);
     try {
       // const response = await sendToBKC(payload, req.body.privateKeyHex);
-      // addTxid(students, response.data.transactions);
+      // addTxid(students, response.data.transactions, "studentId");
       addPwAndHash(students);
       addRole(students, ROLE.STUDENT);
       const insertedIds = await createAccount(students);

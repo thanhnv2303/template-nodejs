@@ -25,6 +25,12 @@ function addKeyPair(objs) {
   });
 }
 
+function addTxid(objs, txs, idFieldName) {
+  objs.forEach((obj) => {
+    obj.txid = txs.find((tx) => tx[idFieldName] === obj[idFieldName]).transactionId;
+  });
+}
+
 function addPwAndHash(objs) {
   objs.forEach((obj) => {
     const randomPassword = generator.generate({
@@ -67,4 +73,14 @@ async function saveProfiles(profiles, collName) {
   });
 }
 
-module.exports = { bufferToStream, addUniversityPublicKey, addKeyPair, addPwAndHash, addRole, createAccount, addUid, saveProfiles };
+module.exports = {
+  bufferToStream,
+  addUniversityPublicKey,
+  addKeyPair,
+  addTxid,
+  addPwAndHash,
+  addRole,
+  createAccount,
+  addUid,
+  saveProfiles,
+};

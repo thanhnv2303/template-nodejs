@@ -27,10 +27,4 @@ async function sendToBKC(payload, privateKeyHex) {
   });
 }
 
-function addTxid(objs, txs) {
-  objs.forEach((obj) => {
-    obj.txid = txs.find((tx) => tx.teacherId === obj.teacherId).transactionId;
-  });
-}
-
-module.exports = { parseExcel, preparePayload, sendToBKC, addTxid };
+module.exports = { parseExcel, preparePayload, sendToBKC };
