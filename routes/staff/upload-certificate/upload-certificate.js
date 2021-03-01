@@ -7,7 +7,7 @@ const { authen, author } = require("../../acc/protect-middleware");
 const connection = require("../../../db");
 const { ROLE } = require("../../acc/role");
 const axios = require("axios").default;
-const ecies = require("ecies-geth");
+// const ecies = require("ecies-geth");
 var crypto = require("crypto");
 
 const { Duplex } = require("stream");
@@ -55,7 +55,8 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       // encrypt data
       let cipherPromises = certificates.map(async (cert) => {
         const publicKeyHex65 = cert.studentPublicKey65;
-        const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(cert)))).toString("hex");
+        // const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(cert)))).toString("hex");
+        const cipher = "";
         return cipher;
       });
       const ciphers = await Promise.all(cipherPromises);
@@ -86,7 +87,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       }
     });
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 

@@ -9,10 +9,6 @@ const connection = require("../../../db");
 // const bcrypt = require("bcryptjs");
 const { ROLE } = require("../../acc/role");
 
-const bip39 = require("bip39");
-const HdKey = require("hdkey");
-const secp256k1 = require("secp256k1");
-
 const axios = require("axios").default;
 
 const generator = require("generate-password");
@@ -31,30 +27,30 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     const studentHistoryCol = (await connection).db().collection("StudentHistory");
     const accCol = (await connection).db().collection("Account");
 
-    const hdKey = HdKey.fromMasterSeed(bip39.mnemonicToSeedSync(bip39.generateMnemonic()));
+    // const hdKey = HdKey.fromMasterSeed(bip39.mnemonicToSeedSync(bip39.generateMnemonic()));
     readXlsxFile(bufferToStream(req.file.buffer)).then(async (rows) => {
       // skip header
       rows.shift();
       // parse excel
       let students = rows.map((row, index) => {
-        const path = "m/44'/0'/0'/0/" + index;
-        const newAccNode = hdKey.derive(path);
-        const eduProgram = { name: row[8], totalCredit: row[9], minYear: row[10], maxYear: row[11] };
-        let student = {
-          studentId: row[0].toString(),
-          name: row[1],
-          birthday: row[2]?.toString(),
-          gender: row[3],
-          email: row[4],
-          genaration: row[5],
-          class: row[6],
-          school: row[7], // equivalent deparment
-          eduProgram,
-          publicKey: newAccNode.publicKey.toString("hex"),
-          publicKey65: Buffer.from(secp256k1.publicKeyCreate(newAccNode.privateKey, false)).toString("hex"),
-          privateKey: newAccNode.privateKey.toString("hex"),
-        };
-        return student;
+        // const path = "m/44'/0'/0'/0/" + index;
+        // const newAccNode = hdKey.derive(path);
+        // const eduProgram = { name: row[8], totalCredit: row[9], minYear: row[10], maxYear: row[11] };
+        // let student = {
+        //   studentId: row[0].toString(),
+        //   name: row[1],
+        //   birthday: row[2]?.toString(),
+        //   gender: row[3],
+        //   email: row[4],
+        //   genaration: row[5],
+        //   class: row[6],
+        //   school: row[7], // equivalent deparment
+        //   eduProgram,
+        //   publicKey: newAccNode.publicKey.toString("hex"),
+        //   publicKey65: Buffer.from(secp256k1.publicKeyCreate(newAccNode.privateKey, false)).toString("hex"),
+        //   privateKey: newAccNode.privateKey.toString("hex"),
+        // };
+        // return student;
       });
 
       // TODO: send create student to bkc
@@ -110,7 +106,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
       }
     });
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 
@@ -126,7 +122,7 @@ router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await studentHistoryCol.find({ uid: req.user.uid }).toArray();
     res.json(result);
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 

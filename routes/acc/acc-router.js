@@ -42,7 +42,7 @@ router.post("/signup", async (req, res) => {
     res.json({ token: token, role: ROLE.STAFF });
   } catch (error) {
     console.log(error);
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 
@@ -71,7 +71,7 @@ router.post("/signin", upload.none(), async (req, res) => {
     res.json({ token: token, role: acc.role });
   } catch (error) {
     console.log(error);
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 

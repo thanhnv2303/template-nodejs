@@ -95,7 +95,7 @@ router.post("/v1.2/upload-classes", authen, author(ROLE.STAFF), upload.single("e
       }
     });
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 
@@ -122,7 +122,10 @@ async function getTeacherById(teacherId) {
 async function getStudentsByIds(studentIds) {
   const studentHistoryCol = (await connection).db().collection("StudentHistory");
   const studentPromises = studentIds.map(async (studentId) => {
-    const doc = await studentHistoryCol.findOne({ "profiles.studentId": studentId.toString() }, { projection: { "profiles.$": 1, _id: 0 } });
+    const doc = await studentHistoryCol.findOne(
+      { "profiles.studentId": studentId.toString() },
+      { projection: { "profiles.$": 1, _id: 0 } }
+    );
     return doc ? doc.profiles[0] : null;
   });
   return Promise.all(studentPromises);

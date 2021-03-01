@@ -12,19 +12,15 @@ router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
     const state = req.query.state;
     let votes;
     if (state === "new") {
-      votes = await col
-        .find({ state: "new", uid: { $ne: req.user.uid } })
-        .toArray();
+      votes = await col.find({ state: "new", uid: { $ne: req.user.uid } }).toArray();
     } else if (state === "old") {
-      votes = await col
-        .find({ state: { $in: ["accepted", "declined"] } })
-        .toArray();
+      votes = await col.find({ state: { $in: ["accepted", "declined"] } }).toArray();
     } else {
       votes = await col.find({}).toArray();
     }
     res.json(votes);
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 
@@ -34,19 +30,15 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
     const publicKeyOfRequest = req.body.publicKeyOfRequest;
     const privateKeyHex = req.body.privateKeyHex;
     if (!decision || !publicKeyOfRequest || !privateKeyHex) {
-      return res
-        .status(400)
-        .json({
-          ok: false,
-          msg: "decision, publicKeyOfRequest, privateKeyHex is require!",
-        });
+      return res.status(400).json({
+        ok: false,
+        msg: "decision, publicKeyOfRequest, privateKeyHex is require!",
+      });
     }
     let opResult;
 
     if (decision !== "accept" && decision != "decline") {
-      return res
-        .status(400)
-        .json({ ok: false, msg: "decision == accept || decision == decline!" });
+      return res.status(400).json({ ok: false, msg: "decision == accept || decision == decline!" });
     } else if (decision === "accept") {
       opResult = await sendAcceptVote(publicKeyOfRequest, privateKeyHex);
     } else if (decision === "decline") {
@@ -70,7 +62,7 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
       res.status(500).json(opResult);
     }
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 

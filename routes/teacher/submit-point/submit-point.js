@@ -4,7 +4,7 @@ const { authen, author } = require("../../acc/protect-middleware");
 const connection = require("../../../db");
 const { ROLE } = require("../../acc/role");
 const axios = require("axios").default;
-const ecies = require("ecies-geth");
+// const ecies = require("ecies-geth");
 
 router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
   try {
@@ -24,7 +24,7 @@ router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
       return res.status(502).json({ msg: error });
     }
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 
@@ -53,7 +53,8 @@ async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
     };
     const studentPublicKey = studentAndPoint.publicKey;
     const publicKeyHex65 = studentAndPoint.publicKey65;
-    const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(plain)))).toString("hex");
+    // const cipher = (await ecies.encrypt(Buffer.from(publicKeyHex65, "hex"), Buffer.from(JSON.stringify(plain)))).toString("hex");
+    const cipher = "";
     return { studentPublicKey, studentPublicKey65: publicKeyHex65, cipher };
   });
   const points = await Promise.all(pointPromises);
@@ -82,7 +83,7 @@ router.get("/classes/:classId", authen, author(ROLE.TEACHER), async (req, res) =
     res.json(docs);
   } catch (error) {
     console.log(error);
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 
@@ -118,7 +119,7 @@ async function fakeSendPoint(privateKeyHex, claxx, res, classCol) {
       return res.status(502).json({ msg: error });
     }
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 }
 

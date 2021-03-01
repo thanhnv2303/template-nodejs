@@ -71,7 +71,7 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
       }
     });
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 

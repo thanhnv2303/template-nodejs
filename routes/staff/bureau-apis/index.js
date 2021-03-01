@@ -7,13 +7,12 @@ const { ROLE } = require("../../acc/role");
 const connection = require("../../../db");
 
 const readXlsxFile = require("read-excel-file/node");
-const { bufferToStream } = require("../utils");
-const { parseExcel, preparePayload, addTxid, sendToBKC, saveProfiles } = require("./bureau-helper-functions");
-const { addUniversityPublicKey, addKeyPair, addPwAndHash, addRole, addUid, createAccount } = require("../utils");
+const { parseExcel, preparePayload, addTxid, sendToBKC, saveProfiles } = require("./helper");
+const { bufferToStream, addUniversityPublicKey, addKeyPair, addPwAndHash, addRole, addUid, createAccount } = require("../utils");
 
 router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
-    const rows = readXlsxFile(bufferToStream(req.file.buffer));
+    const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     let bureaus = parseExcel(rows);
     addUniversityPublicKey(bureaus, req.user.uid);
     addKeyPair(bureaus);
@@ -42,7 +41,7 @@ router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await bureauHistoryCol.find().toArray();
     res.json(result);
   } catch (error) {
-    res.status(500).json(error.toString());
+    res.status(500).send(error);
   }
 });
 
