@@ -7,8 +7,17 @@ const { ROLE } = require("../../acc/role");
 const connection = require("../../../db");
 
 const readXlsxFile = require("read-excel-file/node");
-const { parseExcel, preparePayload, addTxid, sendToBKC, saveProfiles } = require("./helper");
-const { bufferToStream, addUniversityPublicKey, addKeyPair, addPwAndHash, addRole, addUid, createAccount } = require("../utils");
+const { parseExcel, preparePayload, addTxid, sendToBKC } = require("./helper");
+const {
+  bufferToStream,
+  addUniversityPublicKey,
+  addKeyPair,
+  addPwAndHash,
+  addRole,
+  addUid,
+  createAccount,
+  saveProfiles,
+} = require("../utils");
 
 router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
@@ -24,7 +33,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       addRole(bureaus, ROLE.BUREAU);
       const insertedIds = await createAccount(bureaus);
       addUid(bureaus, insertedIds);
-      const result = await saveProfiles(bureaus);
+      const result = await saveProfiles(bureaus, "BureauHistory");
       res.json(result.ops[0]);
     } catch (error) {
       console.error(error);

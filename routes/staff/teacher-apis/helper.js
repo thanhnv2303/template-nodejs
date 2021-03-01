@@ -1,5 +1,4 @@
 const axios = require("axios").default;
-const connection = require("../../../db");
 
 function parseExcel(rows) {
   // skip header
@@ -34,12 +33,4 @@ function addTxid(objs, txs) {
   });
 }
 
-async function saveProfiles(teachers) {
-  const teacherHistoryCol = (await connection).db().collection("TeacherHistory");
-  return teacherHistoryCol.insertOne({
-    time: new Date().toISOString().split("T")[0],
-    profiles: teachers,
-  });
-}
-
-module.exports = { parseExcel, preparePayload, sendToBKC, addTxid, saveProfiles };
+module.exports = { parseExcel, preparePayload, sendToBKC, addTxid };

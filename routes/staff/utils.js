@@ -59,5 +59,12 @@ function addUid(objs, insertedIds) {
     obj.uid = insertedIds[index];
   });
 }
+async function saveProfiles(profiles, collName) {
+  const coll = (await connection).db().collection(collName);
+  return coll.insertOne({
+    time: new Date().toISOString().split("T")[0],
+    profiles: profiles,
+  });
+}
 
-module.exports = { bufferToStream, addUniversityPublicKey, addKeyPair, addPwAndHash, addRole, createAccount, addUid };
+module.exports = { bufferToStream, addUniversityPublicKey, addKeyPair, addPwAndHash, addRole, createAccount, addUid, saveProfiles };
