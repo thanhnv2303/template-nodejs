@@ -43,7 +43,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
         let student = {
           studentId: row[0].toString(),
           name: row[1],
-          birthday: row[2].toString(),
+          birthday: row[2]?.toString(),
           gender: row[3],
           email: row[4],
           genaration: row[5],
@@ -64,10 +64,11 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
       });
       try {
         // send payload
-        const response = await axios.post("/create-students", {
-          privateKeyHex: req.body.privateKeyHex,
-          profiles: payload,
-        });
+        // TODO: uncomment this when bkc api ready
+        // const response = await axios.post("/create-students", {
+        //   privateKeyHex: req.body.privateKeyHex,
+        //   profiles: payload,
+        // });
         // gen pw
         students = students.map((student) => {
           let randomPassword = generator.generate({
@@ -93,7 +94,8 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
         const profiles = students.map((student, index) => ({
           ...student,
           uid: insertedIds[index],
-          txid: getTransactionIdByStudentId(response.data, student.studentId),
+          // TODO: uncomment this when bkc api ready
+          // txid: getTransactionIdByStudentId(response.data, student.studentId),
         }));
         // save profile
         const insertStudentHistoryResult = await studentHistoryCol.insertOne({
