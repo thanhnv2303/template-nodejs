@@ -8,6 +8,7 @@ const multer = require("multer");
 const { ROLE } = require("./role");
 const upload = multer();
 
+// FIXME: account of university is provide, not sign up!!!, remove this api when in production
 router.post("/signup", async (req, res) => {
   try {
     // validate submited data

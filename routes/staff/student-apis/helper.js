@@ -33,5 +33,4 @@ async function sendToBKC(payload, privateKeyHex) {
   });
 }
 
-
 module.exports = { parseExcel, preparePayload, sendToBKC };
