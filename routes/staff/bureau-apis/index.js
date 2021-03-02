@@ -38,8 +38,8 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       const result = await saveProfiles(bureaus, "BureauHistory");
       res.json(result.ops[0]);
     } catch (error) {
-      console.error(error);
-      return res.status(502).send(error);
+      console.error(error?.response?.data);
+      return res.status(502).send(error?.response?.data);
     }
   } catch (error) {
     res.status(500).send(error);

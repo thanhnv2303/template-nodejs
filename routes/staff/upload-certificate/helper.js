@@ -60,4 +60,44 @@ function preparePayload(certs, ciphers, hashes) {
   });
 }
 
-module.exports = { hashCerts, encryptCerts, addStudentInfoByStudentId, addUniversityName, parseExcel, preparePayload };
+function addEncrypt(certs) {
+  certs.forEach((cert) => {
+    cert.cipher = encrypt(cert.publicKey, Buffer.from(JSON.stringify(cert))).toString("hex");
+  });
+}
+
+function addHashCert(certs) {
+  certs.forEach((cert) => {
+    cert.hash = crypto.createHash("sha256").update(JSON.stringify(cert)).digest("hex");
+  });
+}
+
+function preparePayloadv2(certs) {
+  return certs.map((cert) => ({
+    globalregisno: cert.globalregisno,
+    studentPublicKey: cert.publicKey,
+    cipher: cert.cipher,
+    hash: cert.hash, // TODO: remind Thanh to add hash filed too!
+  }));
+}
+function markActive(certs) {
+  certs.forEach((cert) => (cert.active = true));
+}
+
+function addTimestamp(certs) {
+  certs.forEach((cert) => (cert.timestamp = Date.now()));
+} // to know which newest
+
+module.exports = {
+  hashCerts,
+  encryptCerts,
+  addStudentInfoByStudentId,
+  addUniversityName,
+  parseExcel,
+  preparePayload,
+  addEncrypt,
+  addHashCert,
+  preparePayloadv2,
+  markActive,
+  addTimestamp,
+};

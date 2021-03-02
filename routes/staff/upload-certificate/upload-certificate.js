@@ -10,7 +10,19 @@ const connection = require("../../../db");
 const readXlsxFile = require("read-excel-file/node");
 const axios = require("axios").default;
 const { bufferToStream, addTxid } = require("../utils");
-const { parseExcel, addUniversityName, addStudentInfoByStudentId, encryptCerts, hashCerts, preparePayload } = require("./helper");
+const {
+  parseExcel,
+  addUniversityName,
+  addStudentInfoByStudentId,
+  encryptCerts,
+  hashCerts,
+  preparePayload,
+  addEncrypt,
+  addHashCert,
+  markActive,
+  addTimestamp,
+  preparePayloadv2,
+} = require("./helper");
 
 router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
@@ -18,16 +30,24 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
     let certs = parseExcel(rows);
     await addUniversityName(certs);
     certs = await addStudentInfoByStudentId(certs);
-    const ciphers = encryptCerts(certs);
-    const hashes = hashCerts(certs);
-    const payload = preparePayload(certs, ciphers, hashes);
+
+    // const ciphers = encryptCerts(certs);
+    // const hashes = hashCerts(certs);
+    // const payload = preparePayload(certs, ciphers, hashes);
     // post to bkc
+    // we save cipher and hashed too, will need it when revoke (though i don't like this way, but that how sawtooth rest-api work for now),
+    addEncrypt(certs);
+    addHashCert(certs);
+
+    const payload = preparePayloadv2(certs);
     try {
       const response = await axios.post("/create_certs", {
         privateKeyHex: req.body.privateKeyHex,
         certificates: payload,
       });
       addTxid(certs, response.data.transactions, "globalregisno");
+      markActive(certs);
+      addTimestamp(certs); // to know which newest
       const certColl = (await connection).db().collection("Certificate");
       const result = await certColl.insertMany(certs);
       res.json(result.ops);
