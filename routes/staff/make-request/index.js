@@ -15,11 +15,8 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
     const col = (await connection).db().collection(PROFILE);
     const accCol = (await connection).db().collection("Account");
     const profile = await col.findOne({ uid: req.user.uid });
-    if (!profile) {
-      const acc = await accCol.findOne({ _id: new ObjectID(req.user.uid) });
-      return res.json({ email: acc.email });
-    }
-    return res.json(profile);
+    const acc = await accCol.findOne({ _id: new ObjectID(req.user.uid) });
+    return res.json({ ...profile, email: acc.email });
   } catch (err) {
     return res.status(500).json(err.toString());
   }
