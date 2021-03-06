@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const connection = require("../../../db");
+const connection = require("../../../../db");
 const VOTE_REQUEST = "VoteRequest";
 
 const { authen, author } = require("../../acc/protect-middleware");

@@ -5,7 +5,7 @@ const upload = multer();
 
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
-const connection = require("../../../db");
+const connection = require("../../../../db");
 const PROFILE = "UniversityProfile";
 
 const { profileSchema } = require("./schema");

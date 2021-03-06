@@ -5,17 +5,24 @@ const upload = multer();
 
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
-const connection = require("../../../db");
+const connection = require("../../../../db");
 
 const readXlsxFile = require("read-excel-file/node");
 const axios = require("axios").default;
 
 const { bufferToStream } = require("../utils");
-const { parseExcel, getTeacherById, getBureauById, getStudentsByIds } = require("./helper");
+const { parseExcel, getTeacherById, getStudentsByIds } = require("./helper");
 
-router.post("/v1.2/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
+//
+router.get("/v1.2/classes", authen, author(ROLE.STAFF), async (req, res) => {
+  const classCol = (await connection).db().collection("Class");
+  const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
+  res.json(docs);
+});
+
+//
+router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
-    const classCol = (await connection).db().collection("Class");
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     const records = parseExcel(rows);
 
@@ -38,16 +45,14 @@ router.post("/v1.2/upload-classes", authen, author(ROLE.STAFF), upload.single("e
         },
         note: classInfo.note,
         teacherId: classInfo.teacherId,
-        bureauId: classInfo.bureauId,
         studentIds: entry[1],
       };
     });
 
-    // pre-join students' info, teacher info, bureau info
+    // pre-join students' info, teacher info,
     const classesPromises = simpleClasses.map(async (claxx) => {
       // TODO: if not found item, --> res to FE to notif user
       claxx.teacher = await getTeacherById(claxx.teacherId);
-      claxx.bureau = await getBureauById(claxx.bureauId);
       claxx.students = await getStudentsByIds(claxx.studentIds);
       return claxx;
     });
@@ -70,7 +75,7 @@ router.post("/v1.2/upload-classes", authen, author(ROLE.STAFF), upload.single("e
       classes.forEach((clx) => {
         clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
       });
-
+      const classCol = (await connection).db().collection("Class");
       const result = await classCol.insertMany(classes);
       res.json(result.ops);
     } catch (error) {
@@ -80,13 +85,6 @@ router.post("/v1.2/upload-classes", authen, author(ROLE.STAFF), upload.single("e
   } catch (error) {
     res.status(500).send(error);
   }
-});
-
-router.get("/v1.2/classes", authen, author(ROLE.STAFF), async (req, res) => {
-  const classCol = (await connection).db().collection("Class");
-  // const docs = await classCol.find({ uid: req.user.uid }).sort({ uploadTimestamp: -1 }).toArray();
-  const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
-  res.json(docs);
 });
 
 module.exports = router;

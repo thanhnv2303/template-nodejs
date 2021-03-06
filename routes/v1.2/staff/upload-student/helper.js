@@ -19,7 +19,7 @@ function parseExcel(rows) {
   });
 }
 
-function addCIDPwandHash(students) {
+function addCidAsFirstTimePw(students) {
   students.forEach((student) => {
     const salt = bcrypt.genSaltSync();
     student.password = student.cid;
@@ -42,4 +42,4 @@ async function sendToBKC(payload, privateKeyHex) {
   });
 }
 
-module.exports = { parseExcel, preparePayload, sendToBKC, addCIDPwandHash };
+module.exports = { parseExcel, preparePayload, sendToBKC, addCidAsFirstTimePw };
