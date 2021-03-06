@@ -8,13 +8,12 @@ const { ROLE } = require("../../acc/role");
 const connection = require("../../../db");
 
 const readXlsxFile = require("read-excel-file/node");
-const { parseExcel, preparePayload, sendToBKC } = require("./helper");
+const { parseExcel, preparePayload, sendToBKC, addCIDPwandHash } = require("./helper");
 const {
   bufferToStream,
   addUniversityPublicKey,
-  addKeyPair,
+  addKeyPairIfNeed,
   addTxid,
-  addPwAndHash,
   addRole,
   addUid,
   createAccount,
@@ -23,19 +22,21 @@ const {
 
 router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
+    // TODO: check if file too large -> suggest user to split it
+    // TODO: validate schema
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     let students = parseExcel(rows);
-    addUniversityPublicKey(students, req.user.uid);
-    addKeyPair(students);
+    addUniversityPublicKey(students, req.body.privateKeyHex);
+    addKeyPairIfNeed(students);
     // const payload = preparePayload(students);
     try {
       // const response = await sendToBKC(payload, req.body.privateKeyHex);
       // addTxid(students, response.data.transactions, "studentId");
-      addPwAndHash(students);
+      addCIDPwandHash(students);
       addRole(students, ROLE.STUDENT);
       const insertedIds = await createAccount(students);
       addUid(students, insertedIds);
-      const result = await saveProfiles(students, "StudentHistory");
+      const result = await saveProfiles(students, "StudentHistory", req.file.originalname);
       res.json(result.ops[0]);
     } catch (error) {
       console.error(error);

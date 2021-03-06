@@ -11,17 +11,18 @@ function bufferToStream(myBuuffer) {
   return tmp;
 }
 
-async function addUniversityPublicKey(objs, userId) {
-  const uniProfileCol = (await connection).db().collection("UniversityProfile");
-  const universityPublicKey = (await uniProfileCol.findOne({ uid: userId })).pubkey;
+function addUniversityPublicKey(objs, privateKeyHex) {
+  const universityPublicKey = PrivateKey.fromHex(privateKeyHex).publicKey.toHex(true);
   objs.forEach((obj) => (obj.universityPublicKey = universityPublicKey));
 }
 
-function addKeyPair(objs) {
+function addKeyPairIfNeed(objs) {
   objs.forEach((obj) => {
-    const privateKeyObj = new PrivateKey();
-    obj.privateKey = privateKeyObj.toHex().slice(2); // 32 bytes
-    obj.publicKey = privateKeyObj.publicKey.toHex(true); // 33bytes
+    if (!obj.publicKey) {
+      const privateKeyObj = new PrivateKey();
+      obj.privateKey = privateKeyObj.toHex().slice(2); // 32 bytes
+      obj.publicKey = privateKeyObj.publicKey.toHex(true); // 33bytes
+    }
   });
 }
 
@@ -31,7 +32,7 @@ function addTxid(objs, txs, idFieldName) {
   });
 }
 
-function addPwAndHash(objs) {
+function addRandomPwAndHash(objs) {
   objs.forEach((obj) => {
     const randomPassword = generator.generate({
       length: 8,
@@ -65,10 +66,11 @@ function addUid(objs, insertedIds) {
     obj.uid = insertedIds[index];
   });
 }
-async function saveProfiles(profiles, collName) {
+async function saveProfiles(profiles, collName, originalFileName) {
   const coll = (await connection).db().collection(collName);
   return coll.insertOne({
     time: new Date().toISOString().split("T")[0],
+    originalFileName,
     profiles: profiles,
   });
 }
@@ -76,9 +78,9 @@ async function saveProfiles(profiles, collName) {
 module.exports = {
   bufferToStream,
   addUniversityPublicKey,
-  addKeyPair,
+  addKeyPairIfNeed,
   addTxid,
-  addPwAndHash,
+  addRandomPwAndHash,
   addRole,
   createAccount,
   addUid,

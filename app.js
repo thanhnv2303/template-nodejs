@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
 const axios = require("axios").default;
 axios.defaults.baseURL = process.env.REST_API_URL;
@@ -9,14 +11,8 @@ axios.defaults.baseURL = process.env.REST_API_URL;
 const cors = require("cors");
 app.use(cors());
 
-const accRouter = require("./routes/acc/acc-router");
-app.use("/acc", accRouter);
-
-const staffRouter = require("./routes/staff/staff-router");
-app.use("/staff", staffRouter);
-
-const teacherRouter = require("./routes/teacher/teacher-router");
-app.use("/teacher", teacherRouter);
+app.use("/api/v1", require("./routes/v1.0"));
+app.use("/api/v1.2", require("./routes/v1.2"));
 
 app.listen(8003, () => {
   console.log("App listening on port 8003!");

@@ -1,4 +1,5 @@
 const axios = require("axios").default;
+const bcrypt = require("bcryptjs");
 
 function parseExcel(rows) {
   // skip header
@@ -7,14 +8,22 @@ function parseExcel(rows) {
     return {
       studentId: row[0].toString(),
       name: row[1],
-      birthday: row[2]?.toString(),
+      birthday: row[2].toString(),
       gender: row[3],
       email: row[4],
-      genaration: row[5], // k61, k62...
-      class: row[6],
-      school: row[7], // equivalent deparment
-      eduProgram: { name: row[8], totalCredit: row[9], minYear: row[10], maxYear: row[11] },
+      cid: row[5], // citizen identification numbers
+      school: row[6], // equivalent deparment
+      eduProgram: { name: row[7], totalCredit: row[8], minYear: row[9], maxYear: row[10] },
+      publicKey: row[11],
     };
+  });
+}
+
+function addCIDPwandHash(students) {
+  students.forEach((student) => {
+    const salt = bcrypt.genSaltSync();
+    student.password = student.cid;
+    student.hashedPassword = bcrypt.hashSync(student.password, salt);
   });
 }
 
@@ -33,4 +42,4 @@ async function sendToBKC(payload, privateKeyHex) {
   });
 }
 
-module.exports = { parseExcel, preparePayload, sendToBKC };
+module.exports = { parseExcel, preparePayload, sendToBKC, addCIDPwandHash };

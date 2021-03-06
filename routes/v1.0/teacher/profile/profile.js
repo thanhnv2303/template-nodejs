@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const upload = multer();
-const { authen, author } = require("../../acc/protect-middleware");
+const { authen, author } = require("../../../v1.2/acc/protect-middleware");
 const connection = require("../../../db");
-const { ROLE } = require("../../acc/role");
+const { ROLE } = require("../../../v1.2/acc/role");
 const ObjectID = require("mongodb").ObjectID;
 
 router.get("/teacher-profile", authen, author(ROLE.TEACHER), async (req, res) => {

@@ -11,9 +11,9 @@ const { parseExcel, preparePayload, sendToBKC } = require("./helper");
 const {
   bufferToStream,
   addUniversityPublicKey,
-  addKeyPair,
+  addKeyPairIfNeed,
   addTxid,
-  addPwAndHash,
+  addRandomPwAndHash,
   addRole,
   addUid,
   createAccount,
@@ -22,19 +22,21 @@ const {
 
 router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
+    // TODO: check if file too large -> suggest user to split it
+    // TODO: validate schema
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     let teachers = parseExcel(rows);
-    addUniversityPublicKey(teachers, req.user.uid);
-    addKeyPair(teachers);
+    addUniversityPublicKey(teachers, req.body.privateKeyHex);
+    addKeyPairIfNeed(teachers);
     const payload = preparePayload(teachers);
     try {
       const response = await sendToBKC(payload, req.body.privateKeyHex);
       addTxid(teachers, response.data.transactions, "teacherId");
-      addPwAndHash(teachers);
+      addRandomPwAndHash(teachers);
       addRole(teachers, ROLE.TEACHER);
       const insertedIds = await createAccount(teachers);
       addUid(teachers, insertedIds);
-      const result = await saveProfiles(teachers, "TeacherHistory");
+      const result = await saveProfiles(teachers, "TeacherHistory", req.file.originalname);
       res.json(result.ops[0]);
     } catch (error) {
       console.error(error);

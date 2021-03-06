@@ -3,9 +3,8 @@ const router = express.Router();
 
 router.use(require("./make-request"));
 router.use(require("./voting"));
-router.use(require("./bureau-apis"));
-router.use(require("./teacher-apis"));
-router.use(require("./student-apis"));
+router.use(require("./upload-teacher"));
+router.use(require("./upload-student"));
 
 router.use(require("./upload-subject/upload-subject"));
 router.use(require("./upload-class/upload-class"));

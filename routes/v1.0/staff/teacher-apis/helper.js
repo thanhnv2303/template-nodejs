@@ -10,6 +10,7 @@ function parseExcel(rows) {
     name: row[3],
     email: row[4],
     phone: row[5],
+    publicKey: row[6],
   }));
 }
 
