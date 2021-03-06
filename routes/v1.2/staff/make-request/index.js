@@ -2,11 +2,14 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const upload = multer();
+
 const { authen, author } = require("../../acc/protect-middleware");
-const connection = require("../../../db");
-const { profileSchema } = require("./schema");
 const { ROLE } = require("../../acc/role");
+const connection = require("../../../db");
 const PROFILE = "UniversityProfile";
+
+const { profileSchema } = require("./schema");
+const { validate } = require("../../../utils");
 const ObjectID = require("mongodb").ObjectID;
 const axios = require("axios").default;
 
@@ -24,47 +27,27 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
 
 router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
   try {
-    delete req.body.profile._id;
     const profile = req.body.profile;
     profile.uid = req.user.uid;
-    const col = (await connection).db().collection(PROFILE);
 
-    // first valid data
-    const { error } = profileSchema.validate(profile, { abortEarly: false });
-    if (error) {
-      const errors = {};
-      for (let err of error.details) {
-        errors[err.context.key] = err.message;
-      }
-      return res.status(400).json(errors);
-    }
+    const errs = validate(profile, profileSchema);
+    if (errs) return res.status(400).json(errs);
 
-    // send to bkc
+    const profileColl = (await connection).db().collection(PROFILE);
+
     try {
       const response = await axios.post("/create_institution", {
         privateKeyHex: req.body.privateKeyHex,
         profile,
       });
-      await col.updateOne(
-        { uid: req.user.uid },
-        {
-          $set: {
-            ...profile,
-            state: "voting",
-            txid: response.data.transactionId,
-          },
-        }
-      );
+      await profileColl.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting", txid: response.data.transactionId } });
       res.json({ ok: true });
     } catch (error) {
-      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } });
-      res.json({
-        ok: false,
-        msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.data.error,
-      });
+      await profileColl.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } });
+      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.data.error });
     }
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json(err.toString());
   }
 });

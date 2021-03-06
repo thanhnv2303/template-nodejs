@@ -75,7 +75,7 @@ async function sendAcceptVote(publicKeyOfRequest, privateKeyHex) {
     });
     return res.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return error.response.data;
   }
 }

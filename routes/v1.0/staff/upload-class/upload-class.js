@@ -62,7 +62,7 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
         const result = await classCol.insertMany(classes);
         res.json(result.ops);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         if (error.response) {
           res.status(502).json({ msg: "Không thể tạo tx: " + error.response.data.error });
         } else {

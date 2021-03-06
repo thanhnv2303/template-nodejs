@@ -82,7 +82,7 @@ router.get("/classes/:classId", authen, author(ROLE.TEACHER), async (req, res) =
     const docs = await classCol.findOne({ classId: classId });
     res.json(docs);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send(error);
   }
 });

@@ -42,7 +42,7 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign({ uid: result.insertedId, role: ROLE.STAFF }, process.env.TOKEN_SECRET);
     res.json({ token: token, role: ROLE.STAFF });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send(error);
   }
 });
@@ -71,7 +71,7 @@ router.post("/signin", upload.none(), async (req, res) => {
     const token = jwt.sign({ uid: acc._id, role: acc.role }, process.env.TOKEN_SECRET);
     res.json({ token: token, role: acc.role });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send(error);
   }
 });
