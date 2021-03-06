@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { authen, author } = require("../../acc/protect-middleware");
-const connection = require("../../../db");
+const connection = require("../../../../db");
 const { ROLE } = require("../../acc/role");
 const axios = require("axios").default;
 // const ecies = require("ecies-geth");

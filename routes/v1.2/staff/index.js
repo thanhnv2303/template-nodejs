@@ -7,6 +7,6 @@ router.use(require("./upload-teacher"));
 router.use(require("./upload-student"));
 router.use(require("./upload-class"));
 
-router.use(require("./upload-certificate/upload-certificate"));
+router.use(require("./upload-certificate"));
 router.use(require("./revoke-certificate"));
 module.exports = router;

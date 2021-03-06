@@ -1,6 +1,6 @@
 const router = require("express").Router();
-const upload = multer();
 const multer = require("multer");
+const upload = multer();
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const { validate } = require("../../utils");
 const { signUpSchema, signInSchema } = require("./schema");
 
-const connection = require("../../db");
+const connection = require("../../../db");
 const ACC_COLL_NAME = "Account";
 const { ROLE } = require("./role");
 

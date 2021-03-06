@@ -1,4 +1,4 @@
-const connection = require("../../../db");
+const connection = require("../../../../db");
 
 function parseExcel(rows) {
   // skip header

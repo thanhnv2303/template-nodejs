@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
-const connection = require("../../../db");
+const connection = require("../../../../db");
 
 router.get("/certificate", authen, author(ROLE.STAFF), async (req, res) => {
   try {

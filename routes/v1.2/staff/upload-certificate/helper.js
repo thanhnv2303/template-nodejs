@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const { encrypt } = require("eciesjs");
-const connection = require("../../../db");
+const connection = require("../../../../db");
 
 function parseExcel(rows) {
   rows.shift();

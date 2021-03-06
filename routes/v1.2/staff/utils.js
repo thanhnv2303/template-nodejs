@@ -1,4 +1,4 @@
-const connection = require("../../db");
+const connection = require("../../../db");
 const { Duplex } = require("stream");
 const { PrivateKey } = require("eciesjs");
 const generator = require("generate-password");

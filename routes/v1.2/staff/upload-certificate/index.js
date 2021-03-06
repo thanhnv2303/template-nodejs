@@ -5,7 +5,7 @@ const upload = multer();
 
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
-const connection = require("../../../db");
+const connection = require("../../../../db");
 
 const readXlsxFile = require("read-excel-file/node");
 const axios = require("axios").default;
@@ -14,9 +14,6 @@ const {
   parseExcel,
   addUniversityName,
   addStudentInfoByStudentId,
-  encryptCerts,
-  hashCerts,
-  preparePayload,
   addEncrypt,
   addHashCert,
   markActive,
@@ -24,18 +21,21 @@ const {
   preparePayloadv2,
 } = require("./helper");
 
+//
+router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
+  const coll = (await connection).db().collection("Certificate");
+  const docs = await coll.find({}).toArray();
+  res.json(docs);
+});
+
+//
 router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     let certs = parseExcel(rows);
+
     await addUniversityName(certs);
     certs = await addStudentInfoByStudentId(certs);
-
-    // const ciphers = encryptCerts(certs);
-    // const hashes = hashCerts(certs);
-    // const payload = preparePayload(certs, ciphers, hashes);
-    // post to bkc
-    // we save cipher and hashed too, will need it when revoke (though i don't like this way, but that how sawtooth rest-api work for now),
     addEncrypt(certs);
     addHashCert(certs);
 
@@ -60,12 +60,6 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
     console.error(error);
     res.status(500).send(error.toString());
   }
-});
-
-router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
-  const coll = (await connection).db().collection("Certificate");
-  const docs = await coll.find({}).toArray();
-  res.json(docs);
 });
 
 module.exports = router;
