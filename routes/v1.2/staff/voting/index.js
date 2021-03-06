@@ -1,14 +1,16 @@
 const express = require("express");
 const router = express.Router();
+
 const connection = require("../../../db");
-const COLL_NAME = "VoteRequest";
+const VOTE_REQUEST = "VoteRequest";
+
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
 const axios = require("axios").default;
 
 router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
   try {
-    const col = (await connection).db().collection(COLL_NAME);
+    const col = (await connection).db().collection(VOTE_REQUEST);
     const state = req.query.state;
     let votes;
     if (state === "new") {
@@ -29,65 +31,42 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
     const decision = req.body.decision;
     const publicKeyOfRequest = req.body.publicKeyOfRequest;
     const privateKeyHex = req.body.privateKeyHex;
-    if (!decision || !publicKeyOfRequest || !privateKeyHex) {
-      return res.status(400).json({
-        ok: false,
-        msg: "decision, publicKeyOfRequest, privateKeyHex is require!",
-      });
-    }
-    let opResult;
 
+    // validate
+    if (!decision || !publicKeyOfRequest || !privateKeyHex) {
+      return res.status(400).json({ ok: false, msg: "decision, publicKeyOfRequest, privateKeyHex is require!" });
+    }
     if (decision !== "accept" && decision != "decline") {
       return res.status(400).json({ ok: false, msg: "decision == accept || decision == decline!" });
-    } else if (decision === "accept") {
-      opResult = await sendAcceptVote(publicKeyOfRequest, privateKeyHex);
-    } else if (decision === "decline") {
-      opResult = await sendDeclineVote(publicKeyOfRequest, privateKeyHex);
     }
 
-    if (opResult.ok) {
-      const col = (await connection).db().collection(COLL_NAME);
+    try {
+      const response = await axios.post("/create_vote", {
+        publicKeyOfRequest,
+        privateKeyHex,
+        decision,
+      });
+
+      const col = (await connection).db().collection(VOTE_REQUEST);
       const updateResult = await col.updateOne(
         { pubkey: publicKeyOfRequest },
         {
           $set: {
             state: decision === "accept" ? "accepted" : "declined",
             date: new Date().toISOString().split("T")[0],
-            txid: opResult.txid,
+            txid: response.data.txid,
           },
         }
       );
+
       res.json(updateResult);
-    } else {
-      res.status(500).json(opResult);
+    } catch (error) {
+      console.error(error);
+      res.status(502).send(error);
     }
   } catch (error) {
     res.status(500).send(error);
   }
 });
-
-async function sendAcceptVote(publicKeyOfRequest, privateKeyHex) {
-  try {
-    const res = await axios.post("/create_vote", {
-      publicKeyOfRequest,
-      privateKeyHex,
-      decision: "accept",
-    });
-    return res.data;
-  } catch (error) {
-    console.log(error);
-    return error.response.data;
-  }
-}
-
-async function sendDeclineVote(publicKeyOfRequest, privateKeyHex) {
-  const res = await axios.post("/create_vote", {
-    publicKeyOfRequest,
-    privateKeyHex,
-    decision: "decline",
-  });
-  return res.data;
-  // return Promise.resolve({ ok: true, txid: "asdfasd" });
-}
 
 module.exports = router;
