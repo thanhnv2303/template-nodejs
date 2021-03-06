@@ -39,7 +39,7 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
       return res.status(400).json(errors);
     }
 
-    // forward to sawtooth-cli to make tx
+    // send to bkc
     try {
       const response = await axios.post("/create_institution", {
         privateKeyHex: req.body.privateKeyHex,
@@ -53,12 +53,11 @@ router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
             state: "voting",
             txid: response.data.transactionId,
           },
-        },
-        { upsert: true }
+        }
       );
       res.json({ ok: true });
     } catch (error) {
-      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } }, { upsert: true });
+      await col.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } });
       res.json({
         ok: false,
         msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.data.error,
@@ -75,12 +74,8 @@ router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"
     const col = (await connection).db().collection(PROFILE);
     const imgBase64 = req.file.buffer.toString("base64");
     const imgSrc = `data:${req.file.mimetype};base64,${imgBase64}`;
-    const opResult = await col.updateOne({ uid: req.user.uid }, { $set: { imgSrc: imgSrc } }, { upsert: true });
-    if (opResult.result.ok) {
-      res.json(imgSrc);
-    } else {
-      res.json(opResult);
-    }
+    await col.updateOne({ uid: req.user.uid }, { $set: { imgSrc: imgSrc } }, { upsert: true });
+    res.json(imgSrc);
   } catch (error) {
     res.status(500).send(error);
   }
