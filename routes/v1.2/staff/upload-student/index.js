@@ -26,6 +26,7 @@ router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await studentHistoryCol.find().toArray();
     res.json(result);
   } catch (error) {
+    console.error(error);
     res.status(500).send(error);
   }
 });
@@ -38,10 +39,10 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     let students = parseExcel(rows);
     addUniversityPublicKey(students, req.body.privateKeyHex);
     addKeyPairIfNeed(students);
-    // const payload = preparePayload(students);
+    const payload = preparePayload(students);
     try {
-      // const response = await sendToBKC(payload, req.body.privateKeyHex);
-      // addTxid(students, response.data.transactions, "studentId");
+      const response = await sendToBKC(payload, req.body.privateKeyHex);
+      addTxid(students, response.data.transactions, "publicKey");
       addCidAsFirstTimePw(students);
       addRole(students, ROLE.STUDENT);
       const insertedIds = await createAccount(students);
@@ -50,10 +51,12 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
       res.json(result.ops[0]);
     } catch (error) {
       console.error(error);
-      return res.status(502).send(error);
+      if (error.response) return res.status(502).send(error.response.data);
+      else return res.status(500).send(error);
     }
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 

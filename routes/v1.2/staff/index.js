@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-router.use(require("./make-request"));
+router.use(require("./register"));
 router.use(require("./voting"));
 router.use(require("./upload-teacher"));
 router.use(require("./upload-student"));

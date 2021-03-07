@@ -77,7 +77,7 @@ function preparePayloadv2(certs) {
     globalregisno: cert.globalregisno,
     studentPublicKey: cert.publicKey,
     cipher: cert.cipher,
-    hash: cert.hash, // TODO: remind Thanh to add hash filed too!
+    hash: cert.hash,
   }));
 }
 function markActive(certs) {

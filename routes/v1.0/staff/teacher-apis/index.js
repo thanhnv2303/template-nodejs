@@ -40,10 +40,12 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
       res.json(result.ops[0]);
     } catch (error) {
       console.error(error);
-      return res.status(502).send(error);
+      if (error.response) return res.status(502).send(error.response.data);
+      return res.status(500).send(error);
     }
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -53,7 +55,8 @@ router.get("/teacher-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await teacherHistoryCol.find().toArray();
     res.json(result);
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 

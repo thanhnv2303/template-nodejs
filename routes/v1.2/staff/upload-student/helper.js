@@ -22,7 +22,7 @@ function parseExcel(rows) {
 function addCidAsFirstTimePw(students) {
   students.forEach((student) => {
     const salt = bcrypt.genSaltSync();
-    student.password = student.cid;
+    student.firstTimePassword = student.cid;
     student.hashedPassword = bcrypt.hashSync(student.password, salt);
   });
 }

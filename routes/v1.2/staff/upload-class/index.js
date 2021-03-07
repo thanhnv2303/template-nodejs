@@ -14,7 +14,7 @@ const { bufferToStream } = require("../utils");
 const { parseExcel, getTeacherById, getStudentsByIds } = require("./helper");
 
 //
-router.get("/v1.2/classes", authen, author(ROLE.STAFF), async (req, res) => {
+router.get("/classes", authen, author(ROLE.STAFF), async (req, res) => {
   const classCol = (await connection).db().collection("Class");
   const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
   res.json(docs);
@@ -62,8 +62,10 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
     //
     const payload = classes.map((cls) => ({
       classId: cls.classId,
+      subjectId: cls.subject.subjectId,
+      credit: cls.subject.credit,
       teacherPublicKey: cls.teacher.publicKey,
-      bureauPublicKey: cls.bureau.publicKey,
+      studentPublicKeys: cls.students.map((std) => std.publicKey),
     }));
 
     try {
@@ -75,15 +77,18 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
       classes.forEach((clx) => {
         clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
       });
+
       const classCol = (await connection).db().collection("Class");
       const result = await classCol.insertMany(classes);
       res.json(result.ops);
     } catch (error) {
       console.error(error);
-      res.status(502).send(error);
+      if (error.response) return res.status(502).send(error.response.data);
+      return res.status(500).send(error);
     }
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 

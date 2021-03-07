@@ -75,10 +75,12 @@ router.post("/v1.2/upload-classes", authen, author(ROLE.STAFF), upload.single("e
       res.json(result.ops);
     } catch (error) {
       console.error(error);
-      res.status(502).send(error);
+      if (error.response) return res.status(502).send(error.response.data);
+      return res.status(500).send(error);
     }
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 

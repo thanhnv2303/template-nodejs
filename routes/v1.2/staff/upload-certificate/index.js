@@ -53,12 +53,12 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
       res.json(result.ops);
     } catch (error) {
       console.error(error);
-      if (!error.response) return res.status(502).json({ msg: error });
-      res.status(502).json({ msg: "Không thể tạo tx: " + error.response.data.error });
+      if (error.response) return res.status(502).send(error.response.data);
+      else return res.status(500).send(error);
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send(error.toString());
+    res.status(500).send(error);
   }
 });
 

@@ -62,10 +62,12 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
       res.json(updateResult);
     } catch (error) {
       console.error(error);
-      res.status(502).send(error);
+      if (error.response) return res.status(502).send(error.response.data);
+      return res.status(500).send(error);
     }
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 
