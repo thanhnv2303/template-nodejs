@@ -11,7 +11,7 @@ function parseExcel(rows) {
       birthday: row[2].toString(),
       gender: row[3],
       email: row[4],
-      cid: row[5], // citizen identification numbers
+      cid: row[5].toString(), // citizen identification numbers
       school: row[6], // equivalent deparment
       eduProgram: { name: row[7], totalCredit: row[8], minYear: row[9], maxYear: row[10] },
       publicKey: row[11],

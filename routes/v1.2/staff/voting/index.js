@@ -49,7 +49,7 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
 
       const col = (await connection).db().collection(VOTE_REQUEST);
       const updateResult = await col.updateOne(
-        { pubkey: publicKeyOfRequest },
+        { publicKey: publicKeyOfRequest },
         {
           $set: {
             state: decision === "accept" ? "accepted" : "declined",

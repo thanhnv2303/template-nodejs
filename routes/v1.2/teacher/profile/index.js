@@ -7,7 +7,7 @@ const connection = require("../../../../db");
 const { ROLE } = require("../../acc/role");
 const ObjectID = require("mongodb").ObjectID;
 
-router.get("/teacher-profile", authen, author(ROLE.TEACHER), async (req, res) => {
+router.get("/profile", authen, author(ROLE.TEACHER), async (req, res) => {
   try {
     const col = (await connection).db().collection("TeacherHistory");
     const doc = await col.findOne({ "profiles.uid": new ObjectID(req.user.uid) }, { projection: { "profiles.$": 1, _id: 0 } });

@@ -38,10 +38,10 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     let students = parseExcel(rows);
     addUniversityPublicKey(students, req.body.privateKeyHex);
     addKeyPairIfNeed(students);
-    const payload = preparePayload(students);
+    // const payload = preparePayload(students);
     try {
-      const response = await sendToBKC(payload, req.body.privateKeyHex);
-      addTxid(students, response.data.transactions, "studentId");
+      // const response = await sendToBKC(payload, req.body.privateKeyHex);
+      // addTxid(students, response.data.transactions, "studentId");
       addCidAsFirstTimePw(students);
       addRole(students, ROLE.STUDENT);
       const insertedIds = await createAccount(students);
