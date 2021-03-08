@@ -51,8 +51,9 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
         certificates: payload,
       });
       addTxid(certs, response.data.transactions, "studentPublicKey");
-      addType(certs, "create"); // to know which event type
-      addTimestamp(certs); // to know which newest
+      certs.forEach((cert) => (cert.type = "create")); // event type cert: create, revoke, reactive, modify
+      certs.forEach((cert) => (cert.version = 1)); // for each event, version increase 1
+      certs.forEach((cert) => (cert.timestamp = Date.now())); // to know what newest
       const certColl = (await connection).db().collection("Certificate");
       const result = await certColl.insertMany(certs);
       res.json(result.ops);
