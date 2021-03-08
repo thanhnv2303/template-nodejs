@@ -11,4 +11,13 @@ function validate(data, schema) {
   }
 }
 
-module.exports = { validate };
+function randomTxid() {
+  let characters = "0123456789abcdef";
+  let str = "";
+  for (let i = 0; i < 64; i++) {
+    str += characters[Math.floor(Math.random() * 16)];
+  }
+  return str;
+}
+
+module.exports = { validate, randomTxid };

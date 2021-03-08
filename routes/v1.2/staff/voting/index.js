@@ -2,27 +2,27 @@ const express = require("express");
 const router = express.Router();
 
 const connection = require("../../../../db");
-const VOTE_REQUEST = "VoteRequest";
+const BALLOT = "Ballot";
 
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
 const axios = require("axios").default;
 
-router.get("/vote-requests", authen, author(ROLE.STAFF), async (req, res) => {
+router.get("/ballot", authen, author(ROLE.STAFF), async (req, res) => {
   try {
-    const col = (await connection).db().collection(VOTE_REQUEST);
+    const col = (await connection).db().collection(BALLOT);
     const state = req.query.state;
-    let votes;
+    let ballots;
     if (state === "new") {
-      votes = await col.find({ state: "new", uid: { $ne: req.user.uid } }).toArray();
+      ballots = await col.find({ state: "new", uid: { $ne: req.user.uid } }).toArray();
     } else if (state === "old") {
-      votes = await col.find({ state: { $in: ["accepted", "declined"] } }).toArray();
+      ballots = await col.find({ state: { $in: ["accepted", "declined"] } }).toArray();
     } else {
-      votes = await col.find({}).toArray();
+      ballots = await col.find({}).toArray();
     }
-    res.json(votes);
+    return res.json(ballots);
   } catch (error) {
-    res.status(500).send(error.toString());
+    return res.status(500).send(error.toString());
   }
 });
 
@@ -41,13 +41,13 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
     }
 
     try {
-      const response = await axios.post("/create_vote", {
+      const response = await axios.post("/vote", {
         publicKeyOfRequest,
         privateKeyHex,
         decision,
       });
 
-      const col = (await connection).db().collection(VOTE_REQUEST);
+      const col = (await connection).db().collection(BALLOT);
       const updateResult = await col.updateOne(
         { publicKey: publicKeyOfRequest },
         {
@@ -59,7 +59,7 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
         }
       );
 
-      res.json(updateResult);
+      return res.json(updateResult);
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);
