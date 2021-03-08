@@ -7,8 +7,8 @@ router.post("/registration", async (req, res) => {
   try {
     const profile = req.body.profile;
     const ballot = { ...profile, state: "new" };
-    const uniProfile = { ...profile, votes: [] };
     const ballotColl = (await connection).db().collection("Ballot");
+    const uniProfile = { ...profile, votes: [] };
     const uniProfileColl = (await connection).db().collection("UniversityProfile");
     await ballotColl.insertOne(ballot);
     await uniProfileColl.insertOne(uniProfile);
@@ -22,11 +22,12 @@ router.post("/registration", async (req, res) => {
 router.post("/vote", async (req, res) => {
   try {
     const col = (await connection).db().collection("UniversityProfile");
+    const voter = await col.findOne({ publicKey: req.body.publicKey });
     await col.updateOne(
       { publicKey: req.body.requesterPublicKey },
       {
         $push: {
-          votes: { publicKey: req.body.publicKey, decision: req.body.decision },
+          votes: { ...voter, decision: req.body.decision },
         },
       }
     );
