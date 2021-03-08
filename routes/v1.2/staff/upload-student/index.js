@@ -37,6 +37,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     // TODO: validate schema
     let students = parseExcel(rows);
+    // TODO: remove university public key if not need anymore
     addUniversityPublicKey(students, req.body.privateKeyHex);
     addKeyPairIfNeed(students);
     const payload = preparePayload(students);

@@ -15,6 +15,7 @@ const profileSchema = Joi.object({
     .required(),
   description: Joi.string().max(1000),
   imgSrc: Joi.string(),
+  state: Joi.string(),
   votes: Joi.array(),
 });
 

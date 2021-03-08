@@ -25,30 +25,32 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
   }
 });
 
-router.post("/make-request", authen, author(ROLE.STAFF), async (req, res) => {
+router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const profile = req.body.profile;
+    delete profile._id;
     profile.uid = req.user.uid;
 
     const errs = validate(profile, profileSchema);
     if (errs) return res.status(400).json(errs);
 
     const profileColl = (await connection).db().collection(PROFILE);
-
     try {
-      const response = await axios.post("/create_institution", {
+      const response = await axios.post("/staff/register", {
         privateKeyHex: req.body.privateKeyHex,
         profile,
       });
       await profileColl.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting", txid: response.data.transactionId } });
-      res.json({ ok: true });
+      return res.json({ ok: true });
     } catch (error) {
       await profileColl.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } });
-      res.json({ ok: false, msg: "Không thể tạo tx, vui lòng thử lại sau: " + error.response.data.error });
+      console.error(error);
+      if (error.response) return res.status(502).send("Không thể tạo tx, vui lòng thử lại sau");
+      else return res.status(500).send(error);
     }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json(err.toString());
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -60,7 +62,8 @@ router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"
     await col.updateOne({ uid: req.user.uid }, { $set: { imgSrc: imgSrc } }, { upsert: true });
     res.json(imgSrc);
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    return res.status(500).send(error);
   }
 });
 

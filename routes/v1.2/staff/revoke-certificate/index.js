@@ -15,7 +15,7 @@ router.get("/certificate", authen, author(ROLE.STAFF), async (req, res) => {
     return res.json(docs[0]);
   } catch (error) {
     console.error(error);
-    res.status(500).json(error.toString());
+    return res.status(500).send(error);
   }
 });
 

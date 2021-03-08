@@ -13,7 +13,7 @@ function parseExcel(rows) {
       credit: row[4],
       note: row[5],
       teacherId: row[6].toString(),
-      studentId: row[8],
+      studentId: row[7],
     };
   });
   return records;

@@ -37,6 +37,7 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     // TODO: validate schema
     let teachers = parseExcel(rows);
+    // TODO: remove university publickey if not need anymore
     addUniversityPublicKey(teachers, req.body.privateKeyHex);
     addKeyPairIfNeed(teachers);
     const payload = preparePayload(teachers);
