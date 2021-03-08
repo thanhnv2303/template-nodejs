@@ -24,7 +24,7 @@ router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
       return res.status(502).json({ msg: error });
     }
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 });
 
@@ -83,7 +83,7 @@ router.get("/classes/:classId", authen, author(ROLE.TEACHER), async (req, res) =
     res.json(docs);
   } catch (error) {
     console.error(error);
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 });
 
@@ -119,7 +119,7 @@ async function fakeSendPoint(privateKeyHex, claxx, res, classCol) {
       return res.status(502).json({ msg: error });
     }
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 }
 

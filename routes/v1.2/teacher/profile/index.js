@@ -13,7 +13,7 @@ router.get("/profile", authen, author(ROLE.TEACHER), async (req, res) => {
     const doc = await col.findOne({ "profiles.uid": new ObjectID(req.user.uid) }, { projection: { "profiles.$": 1, _id: 0 } });
     res.json(doc ? doc.profiles[0] : null);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 });
 router.post("/change-avatar", authen, author(ROLE.TEACHER), upload.single("avatar"), async (req, res) => {
@@ -32,7 +32,7 @@ router.post("/change-avatar", authen, author(ROLE.TEACHER), upload.single("avata
       res.json(opResult);
     }
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 });
 

@@ -84,11 +84,11 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);
-      return res.status(500).send(error);
+      return res.status(500).send(error.toString());
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).send(error);
+    return res.status(500).send(error.toString());
   }
 });
 

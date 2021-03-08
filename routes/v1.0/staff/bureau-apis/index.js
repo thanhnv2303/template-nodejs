@@ -42,7 +42,7 @@ router.post("/create-bureau", authen, author(ROLE.STAFF), upload.single("excel-f
       return res.status(502).send(error?.response?.data);
     }
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 });
 
@@ -52,7 +52,7 @@ router.get("/bureau-history", authen, author(ROLE.STAFF), async (req, res) => {
     const result = await bureauHistoryCol.find().toArray();
     res.json(result);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 });
 

@@ -28,11 +28,11 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
 router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const profile = req.body.profile;
-    delete profile._id;
+    // delete profile._id;
     profile.uid = req.user.uid;
 
     const errs = validate(profile, profileSchema);
-    if (errs) return res.status(400).json(errs);
+    if (errs) return res.status(400).send(errs);
 
     const profileColl = (await connection).db().collection(PROFILE);
     try {
@@ -46,11 +46,11 @@ router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
       await profileColl.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "fail" } });
       console.error(error);
       if (error.response) return res.status(502).send("Không thể tạo tx, vui lòng thử lại sau");
-      else return res.status(500).send(error);
+      else return res.status(500).send(error.toString());
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).send(error);
+    return res.status(500).send(error.toString());
   }
 });
 
@@ -63,7 +63,7 @@ router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"
     res.json(imgSrc);
   } catch (error) {
     console.error(error);
-    return res.status(500).send(error);
+    return res.status(500).send(error.toString());
   }
 });
 

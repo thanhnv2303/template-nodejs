@@ -27,7 +27,7 @@ router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error(error);
-    res.status(500).send(error);
+    res.status(500).send(error.toString());
   }
 });
 
@@ -53,11 +53,11 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);
-      else return res.status(500).send(error);
+      else return res.status(500).send(error.toString());
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).send(error);
+    return res.status(500).send(error.toString());
   }
 });
 
