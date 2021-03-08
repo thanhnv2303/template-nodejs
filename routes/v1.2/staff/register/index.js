@@ -28,11 +28,11 @@ router.get("/university-profile", authen, author(ROLE.STAFF), async (req, res) =
 router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const profile = req.body.profile;
-    // delete profile._id;
+    delete profile._id;
     profile.uid = req.user.uid;
 
     const errs = validate(profile, profileSchema);
-    if (errs) return res.status(400).send(errs);
+    if (errs) return res.status(400).send(JSON.stringify(errs));
 
     const profileColl = (await connection).db().collection(PROFILE);
     try {

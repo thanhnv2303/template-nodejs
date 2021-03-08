@@ -13,9 +13,22 @@ function parseExcel(rows) {
       email: row[4],
       cid: row[5].toString(), // citizen identification numbers
       school: row[6], // equivalent deparment
-      eduProgram: { name: row[7], totalCredit: row[8], minYear: row[9], maxYear: row[10] },
-      publicKey: row[11],
+      eduProgram: { eduProgramId: row[7], name: row[8], totalCredit: row[9], minYear: row[10], maxYear: row[11] },
+      publicKey: row[12],
     };
+  });
+}
+
+function preparePayload(students) {
+  return students.map((student) => {
+    return { publicKey: student.publicKey, eduProgram: student.eduProgram };
+  });
+}
+
+async function sendToBKC(payload, privateKeyHex) {
+  return axios.post("/staff/create-students", {
+    privateKeyHex,
+    profiles: payload,
   });
 }
 
@@ -24,21 +37,6 @@ function addCidAsFirstTimePw(students) {
     const salt = bcrypt.genSaltSync();
     student.firstTimePassword = student.cid;
     student.hashedPassword = bcrypt.hashSync(student.password, salt);
-  });
-}
-
-// TODO: may be need update payload
-function preparePayload(students) {
-  return students.map((student) => {
-    return { publicKey: student.publicKey, eduProgram: student.eduProgram };
-  });
-}
-
-// TODO: send to bkc when api ready
-async function sendToBKC(payload, privateKeyHex) {
-  return axios.post("/create_students", {
-    privateKeyHex,
-    profiles: payload,
   });
 }
 

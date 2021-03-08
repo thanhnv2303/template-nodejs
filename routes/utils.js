@@ -5,7 +5,7 @@ function validate(data, schema) {
     for (let err of error.details) {
       errors[err.context.key] = err.message;
     }
-    return JSON.stringify(errors);
+    return errors;
   } else {
     return null;
   }

@@ -69,7 +69,7 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
     }));
 
     try {
-      const response = await axios.post("/create_classes", {
+      const response = await axios.post("/staff/create-classes", {
         privateKeyHex: req.body.privateKeyHex,
         classes: payload,
       });

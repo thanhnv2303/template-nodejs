@@ -30,7 +30,15 @@ async function addUniversityName(certs) {
 async function addStudentInfoByStudentId(certs) {
   const certsPromises = certs.map(async (cert) => {
     const student = await getStudentByStudentId(cert.studentId);
-    return { ...cert, name: student.name, birthday: student.birthday, gender: student.gender, publicKey: student.publicKey };
+    return {
+      ...cert,
+      name: student.name,
+      birthday: student.birthday,
+      gender: student.gender,
+      publicKey: student.publicKey,
+      eduProgramId: student.eduProgram.eduProgramId,
+      school: student.school,
+    };
   });
   return Promise.all(certsPromises);
 }
@@ -49,17 +57,6 @@ function hashCerts(certs) {
   return certs.map((cert) => crypto.createHash("sha256").update(JSON.stringify(cert)).digest("hex"));
 }
 
-function preparePayload(certs, ciphers, hashes) {
-  return certs.map((cert, index) => {
-    return {
-      globalregisno: cert.globalregisno,
-      studentPublicKey: cert.publicKey,
-      cipher: ciphers[index],
-      hash: hashes[index], // TODO: remind Thanh to add hash filed too!
-    };
-  });
-}
-
 function addEncrypt(certs) {
   certs.forEach((cert) => {
     cert.cipher = encrypt(cert.publicKey, Buffer.from(JSON.stringify(cert))).toString("hex");
@@ -72,16 +69,17 @@ function addHashCert(certs) {
   });
 }
 
-function preparePayloadv2(certs) {
+function preparePayload(certs) {
   return certs.map((cert) => ({
-    globalregisno: cert.globalregisno,
+    school: cert.school,
+    eduProgramId: cert.eduProgramId,
     studentPublicKey: cert.publicKey,
     cipher: cert.cipher,
     hash: cert.hash,
   }));
 }
-function markActive(certs) {
-  certs.forEach((cert) => (cert.active = true));
+function addType(certs, eventType) {
+  certs.forEach((cert) => (cert.type = eventType));
 }
 
 function addTimestamp(certs) {
@@ -94,10 +92,9 @@ module.exports = {
   addStudentInfoByStudentId,
   addUniversityName,
   parseExcel,
-  preparePayload,
   addEncrypt,
   addHashCert,
-  preparePayloadv2,
-  markActive,
+  preparePayload,
   addTimestamp,
+  addType,
 };

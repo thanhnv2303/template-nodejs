@@ -16,13 +16,13 @@ function parseExcel(rows) {
 
 function preparePayload(teachers) {
   return teachers.map((teacher) => {
-    let { school, department, teacherId, name, publicKey, universityPublicKey } = teacher;
-    return { school, department, teacherId, name, publicKey, universityPublicKey };
+    let { school, department, teacherId, name, publicKey } = teacher;
+    return { school, department, teacherId, name, publicKey };
   });
 }
 
 async function sendToBKC(payload, privateKeyHex) {
-  return axios.post("/create_teachers", {
+  return axios.post("/staff/create-teachers", {
     privateKeyHex,
     profiles: payload,
   });

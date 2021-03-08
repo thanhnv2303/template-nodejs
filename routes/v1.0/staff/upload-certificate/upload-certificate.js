@@ -21,7 +21,7 @@ const {
   addHashCert,
   markActive,
   addTimestamp,
-  preparePayloadv2,
+  preparePayload,
 } = require("./helper");
 
 router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
@@ -39,7 +39,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
     addEncrypt(certs);
     addHashCert(certs);
 
-    const payload = preparePayloadv2(certs);
+    const payload = preparePayload(certs);
     try {
       const response = await axios.post("/create_certs", {
         privateKeyHex: req.body.privateKeyHex,

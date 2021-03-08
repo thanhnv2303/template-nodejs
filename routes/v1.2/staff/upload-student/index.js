@@ -9,16 +9,7 @@ const connection = require("../../../../db");
 
 const readXlsxFile = require("read-excel-file/node");
 const { parseExcel, preparePayload, sendToBKC, addCidAsFirstTimePw } = require("./helper");
-const {
-  bufferToStream,
-  addUniversityPublicKey,
-  addKeyPairIfNeed,
-  addTxid,
-  addRole,
-  addUid,
-  createAccount,
-  saveProfiles,
-} = require("../utils");
+const { bufferToStream, addKeyPairIfNeed, addTxid, addRole, addUid, createAccount, saveProfiles } = require("../utils");
 
 router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -33,12 +24,9 @@ router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
 
 router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
-    // TODO: check if file too large -> suggest user to split it
+    // TODO: check if file too large -> suggest user to split it, validate schema
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
-    // TODO: validate schema
     let students = parseExcel(rows);
-    // TODO: remove university public key if not need anymore
-    addUniversityPublicKey(students, req.body.privateKeyHex);
     addKeyPairIfNeed(students);
     const payload = preparePayload(students);
     try {

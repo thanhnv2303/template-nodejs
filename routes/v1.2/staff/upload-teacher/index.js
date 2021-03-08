@@ -33,12 +33,9 @@ router.get("/teacher-history", authen, author(ROLE.STAFF), async (req, res) => {
 
 router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-file"), async (req, res) => {
   try {
-    // TODO: check if file too large -> suggest user to split it
+    // TODO: check if file too large -> suggest user to split it; validate schema, ...
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
-    // TODO: validate schema
     let teachers = parseExcel(rows);
-    // TODO: remove university publickey if not need anymore
-    addUniversityPublicKey(teachers, req.body.privateKeyHex);
     addKeyPairIfNeed(teachers);
     const payload = preparePayload(teachers);
     try {

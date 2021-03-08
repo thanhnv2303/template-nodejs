@@ -72,7 +72,7 @@ function addHashCert(certs) {
   });
 }
 
-function preparePayloadv2(certs) {
+function preparePayload(certs) {
   return certs.map((cert) => ({
     globalregisno: cert.globalregisno,
     studentPublicKey: cert.publicKey,
@@ -97,7 +97,7 @@ module.exports = {
   preparePayload,
   addEncrypt,
   addHashCert,
-  preparePayloadv2,
+  preparePayload,
   markActive,
   addTimestamp,
 };

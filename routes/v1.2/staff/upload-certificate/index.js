@@ -16,16 +16,21 @@ const {
   addStudentInfoByStudentId,
   addEncrypt,
   addHashCert,
-  markActive,
   addTimestamp,
-  preparePayloadv2,
+  addType,
+  preparePayload,
 } = require("./helper");
 
 //
 router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
-  const coll = (await connection).db().collection("Certificate");
-  const docs = await coll.find({}).toArray();
-  res.json(docs);
+  try {
+    const coll = (await connection).db().collection("Certificate");
+    const docs = await coll.find({}).toArray();
+    return res.json(docs);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send(error);
+  }
 });
 
 //
@@ -39,14 +44,14 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
     addEncrypt(certs);
     addHashCert(certs);
 
-    const payload = preparePayloadv2(certs);
+    const payload = preparePayload(certs);
     try {
-      const response = await axios.post("/create_certs", {
+      const response = await axios.post("/staff/create-certificates", {
         privateKeyHex: req.body.privateKeyHex,
         certificates: payload,
       });
-      addTxid(certs, response.data.transactions, "globalregisno");
-      markActive(certs);
+      addTxid(certs, response.data.transactions, "studentPublicKey");
+      addType(certs, "create"); // to know which event type
       addTimestamp(certs); // to know which newest
       const certColl = (await connection).db().collection("Certificate");
       const result = await certColl.insertMany(certs);

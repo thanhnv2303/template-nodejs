@@ -12,7 +12,7 @@ router.get("/certificate", authen, author(ROLE.STAFF), async (req, res) => {
     const docs = await col.find({ studentId: studentId }).toArray();
     if (docs.length === 0) return res.json({ found: false });
     docs.sort((a, b) => b.timestamp - a.timestamp);
-    return res.json(docs[0]);
+    return res.json(docs);
   } catch (error) {
     console.error(error);
     return res.status(500).send(error.toString());
