@@ -20,6 +20,7 @@ const {
   createAccount,
   saveProfiles,
 } = require("../utils");
+const { mockupBKCResponse } = require("../../../utils");
 
 router.get("/teacher-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -39,7 +40,8 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
     addKeyPairIfNeed(teachers);
     const payload = preparePayload(teachers);
     try {
-      const response = await sendToBKC(payload, req.body.privateKeyHex);
+      // const response = await sendToBKC(payload, req.body.privateKeyHex);
+      const response = mockupBKCResponse(payload, "teacherId");
       addTxid(teachers, response.data.transactions, "teacherId");
       addRandomPwAndHash(teachers);
       addRole(teachers, ROLE.TEACHER);

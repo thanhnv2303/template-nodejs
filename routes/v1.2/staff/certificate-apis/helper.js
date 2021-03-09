@@ -36,6 +36,7 @@ async function addStudentInfoByStudentId(certs) {
       birthday: student.birthday,
       gender: student.gender,
       publicKey: student.publicKey,
+      studentPublicKey: student.publicKey, // this field for payload
       eduProgramId: student.eduProgram.eduProgramId,
       school: student.school,
     };
@@ -73,7 +74,7 @@ function preparePayload(certs) {
   return certs.map((cert) => ({
     school: cert.school,
     eduProgramId: cert.eduProgramId,
-    studentPublicKey: cert.publicKey,
+    studentPublicKey: cert.studentPublicKey,
     cipher: cert.cipher,
     hash: cert.hash,
   }));

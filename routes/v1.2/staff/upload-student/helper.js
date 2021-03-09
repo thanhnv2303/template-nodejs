@@ -36,7 +36,7 @@ function addCidAsFirstTimePw(students) {
   students.forEach((student) => {
     const salt = bcrypt.genSaltSync();
     student.firstTimePassword = student.cid;
-    student.hashedPassword = bcrypt.hashSync(student.password, salt);
+    student.hashedPassword = bcrypt.hashSync(student.firstTimePassword, salt);
   });
 }
 

@@ -7,11 +7,11 @@ const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
 const connection = require("../../../../db");
 
-const readXlsxFile = require("read-excel-file/node");
 const axios = require("axios").default;
+const readXlsxFile = require("read-excel-file/node");
 const { bufferToStream, addTxid } = require("../utils");
 const { parseExcel, addUniversityName, addStudentInfoByStudentId, addEncrypt, addHashCert, preparePayload } = require("./helper");
-
+const { mockupBKCResponse, randomTxid } = require("../../../utils");
 //
 router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -50,16 +50,21 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
 
     const payload = preparePayload(certs);
     try {
-      const response = await axios.post("/staff/create-certificates", {
-        privateKeyHex: req.body.privateKeyHex,
-        certificates: payload,
-      });
+      // const response = await axios.post("/staff/create-certificates", {
+      //   privateKeyHex: req.body.privateKeyHex,
+      //   certificates: payload,
+      // });
+      const response = mockupBKCResponse(payload, "studentPublicKey");
       addTxid(certs, response.data.transactions, "studentPublicKey");
       certs.forEach((cert) => (cert.type = "create")); // event type cert: create, revoke, reactive, modify
       certs.forEach((cert) => (cert.version = 1)); // for each event, version increase 1
       certs.forEach((cert) => (cert.timestamp = Date.now())); // to know what newest
+      const documents = certs.map((cert) => ({
+        studentId: cert.studentId,
+        versions: [cert],
+      }));
       const certColl = (await connection).db().collection("Certificate");
-      const result = await certColl.insertMany(certs);
+      const result = await certColl.insertMany(documents);
       res.json(result.ops);
     } catch (error) {
       console.error(error);
@@ -80,9 +85,7 @@ router.post("/revoke-certificate", authen, author(ROLE.STAFF), async (req, res) 
 
     try {
       // const response = await axios.post("/staff/revoke-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
-      const response = await Promise.resolve({
-        data: { transactionId: "0ee367bf3a412db7793f2d0b3ec3a9871d78601cd5321e6b335503e4d9284572532" },
-      });
+      const response = { data: { transactionId: randomTxid() } };
       cert.txid = response.data.transactionId;
       cert.timestamp = Date.now();
       cert.type = "revoke";
@@ -110,9 +113,7 @@ router.post("/reactive-certificate", authen, author(ROLE.STAFF), async (req, res
 
     try {
       // const response = await axios.post("/staff/reactive-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
-      const response = await Promise.resolve({
-        data: { transactionId: "2db7793f2d0b3ec3a9871d78601cd5321e6b335503e4d9284572532000" },
-      });
+      const response = { data: { transactionId: randomTxid() } };
       cert.txid = response.data.transactionId;
       cert.timestamp = Date.now();
       cert.type = "reactive";

@@ -12,7 +12,7 @@ const axios = require("axios").default;
 
 const { bufferToStream } = require("../utils");
 const { parseExcel, getTeacherById, getStudentsByIds } = require("./helper");
-
+const { mockupBKCResponse } = require("../../../utils");
 //
 router.get("/classes", authen, author(ROLE.STAFF), async (req, res) => {
   const classCol = (await connection).db().collection("Class");
@@ -69,11 +69,11 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
     }));
 
     try {
-      const response = await axios.post("/staff/create-classes", {
-        privateKeyHex: req.body.privateKeyHex,
-        classes: payload,
-      });
-
+      // const response = await axios.post("/staff/create-classes", {
+      //   privateKeyHex: req.body.privateKeyHex,
+      //   classes: payload,
+      // });
+      const response = mockupBKCResponse(payload, "classId");
       classes.forEach((clx) => {
         clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
       });

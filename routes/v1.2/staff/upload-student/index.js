@@ -10,6 +10,7 @@ const connection = require("../../../../db");
 const readXlsxFile = require("read-excel-file/node");
 const { parseExcel, preparePayload, sendToBKC, addCidAsFirstTimePw } = require("./helper");
 const { bufferToStream, addKeyPairIfNeed, addTxid, addRole, addUid, createAccount, saveProfiles } = require("../utils");
+const { mockupBKCResponse } = require("../../../utils");
 
 router.get("/student-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -30,7 +31,8 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     addKeyPairIfNeed(students);
     const payload = preparePayload(students);
     try {
-      const response = await sendToBKC(payload, req.body.privateKeyHex);
+      // const response = await sendToBKC(payload, req.body.privateKeyHex);
+      const response = mockupBKCResponse(payload, "publicKey");
       addTxid(students, response.data.transactions, "publicKey");
       addCidAsFirstTimePw(students);
       addRole(students, ROLE.STUDENT);

@@ -20,4 +20,12 @@ function randomTxid() {
   return str;
 }
 
-module.exports = { validate, randomTxid };
+function mockupBKCResponse(objs, idKey) {
+  const transactions = objs.map((obj) => ({
+    [idKey]: obj[idKey],
+    transactionId: randomTxid(),
+  }));
+  return { data: { transactions } };
+}
+
+module.exports = { validate, randomTxid, mockupBKCResponse };

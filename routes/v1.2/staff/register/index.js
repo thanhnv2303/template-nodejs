@@ -9,7 +9,7 @@ const connection = require("../../../../db");
 const PROFILE = "UniversityProfile";
 
 const { profileSchema } = require("./schema");
-const { validate } = require("../../../utils");
+const { validate, randomTxid } = require("../../../utils");
 const ObjectID = require("mongodb").ObjectID;
 const axios = require("axios").default;
 
@@ -36,10 +36,11 @@ router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
 
     const profileColl = (await connection).db().collection(PROFILE);
     try {
-      const response = await axios.post("/staff/register", {
-        privateKeyHex: req.body.privateKeyHex,
-        profile,
-      });
+      // const response = await axios.post("/staff/register", {
+      //   privateKeyHex: req.body.privateKeyHex,
+      //   profile,
+      // });
+      const response = { data: { transactionId: randomTxid() } };
       await profileColl.updateOne({ uid: req.user.uid }, { $set: { ...profile, state: "voting", txid: response.data.transactionId } });
       return res.json({ ok: true });
     } catch (error) {
