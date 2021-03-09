@@ -28,9 +28,8 @@ router.get("/certificate", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const studentId = req.query.studentId.trim();
     const col = (await connection).db().collection("Certificate");
-    const docs = await col.find({ studentId: studentId }).toArray();
-    docs.sort((a, b) => b.timestamp - a.timestamp);
-    return res.json(docs);
+    const doc = await col.findOne({ studentId: studentId });
+    return res.json(doc);
   } catch (error) {
     console.error(error);
     return res.status(500).send(error.toString());
@@ -92,8 +91,9 @@ router.post("/revoke-certificate", authen, author(ROLE.STAFF), async (req, res) 
       cert.version = cert.version + 1;
       delete cert._id;
       const col = (await connection).db().collection("Certificate");
-      const insertResult = await col.insertOne(cert);
-      return res.json(insertResult.ops[0]);
+      await col.updateOne({ studentId: cert.studentId }, { $push: { versions: cert } });
+      const updatedDoc = await col.findOne({ studentId: cert.studentId });
+      return res.json(updatedDoc);
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);
@@ -120,8 +120,9 @@ router.post("/reactive-certificate", authen, author(ROLE.STAFF), async (req, res
       cert.version = cert.version + 1;
       delete cert._id;
       const col = (await connection).db().collection("Certificate");
-      const insertResult = await col.insertOne(cert);
-      return res.json(insertResult.ops[0]);
+      await col.updateOne({ studentId: cert.studentId }, { $push: { versions: cert } });
+      const updatedDoc = await col.findOne({ studentId: cert.studentId });
+      return res.json(updatedDoc);
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);

@@ -27,7 +27,6 @@ function addKeyPairIfNeed(objs) {
 }
 
 function addTxid(objs, txs, idFieldName) {
-  console.log({ objs, txs, idFieldName });
   objs.forEach((obj) => {
     obj.txid = txs.find((tx) => tx[idFieldName] === obj[idFieldName]).transactionId;
   });
