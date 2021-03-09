@@ -21,8 +21,15 @@ router.post("/registration", async (req, res) => {
 
 router.post("/vote", async (req, res) => {
   try {
+    const ministryColl = (await connection).db().collection("MinistryProfile");
     const col = (await connection).db().collection("UniversityProfile");
-    const voter = await col.findOne({ publicKey: req.body.publicKey });
+    const ministry = await ministryColl.findOne({});
+    let voter = null;
+    if (req.body.publicKey === ministry.publicKey) {
+      voter = ministry;
+    } else {
+      voter = await col.findOne({ publicKey: req.body.publicKey });
+    }
     await col.updateOne(
       { publicKey: req.body.requesterPublicKey },
       {

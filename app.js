@@ -14,6 +14,8 @@ app.use(cors());
 // app.use("/api/v1", require("./routes/v1.0"));
 app.use("/api/v1.2", require("./routes/v1.2"));
 
+const { initMinistryProfile } = require("./init");
 app.listen(8003, () => {
   console.log("App listening on port 8003!");
+  initMinistryProfile();
 });
