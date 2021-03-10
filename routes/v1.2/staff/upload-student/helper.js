@@ -35,7 +35,9 @@ async function sendToBKC(payload, privateKeyHex) {
 function addCidAsFirstTimePw(students) {
   students.forEach((student) => {
     const salt = bcrypt.genSaltSync();
-    student.firstTimePassword = student.cid;
+    // student.firstTimePassword = student.cid;
+    // TODO: remove dev mode
+    student.firstTimePassword = "dev";
     student.hashedPassword = bcrypt.hashSync(student.firstTimePassword, salt);
   });
 }

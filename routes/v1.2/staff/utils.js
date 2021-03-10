@@ -39,7 +39,9 @@ function addRandomPwAndHash(objs) {
       numbers: true,
     });
     const salt = bcrypt.genSaltSync();
-    obj.firstTimePassword = randomPassword;
+    // obj.firstTimePassword = randomPassword;
+    // TODO: remove dev mode
+    obj.firstTimePassword = "dev";
     obj.hashedPassword = bcrypt.hashSync(randomPassword, salt);
   });
 }
