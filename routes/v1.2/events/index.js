@@ -2,16 +2,23 @@ const express = require("express");
 const connection = require("../../../db");
 const router = express.Router();
 
-// TODO: need authen, author too!
+// FIXME: need authen, author too!
 router.post("/registration", async (req, res) => {
   try {
     const profile = req.body.profile;
-    const ballot = { ...profile, state: "new" };
-    const ballotColl = (await connection).db().collection("Ballot");
-    const uniProfile = { ...profile, votes: [] };
-    const uniProfileColl = (await connection).db().collection("UniversityProfile");
-    await ballotColl.insertOne(ballot);
-    await uniProfileColl.insertOne(uniProfile);
+    (await connection)
+      .db()
+      .collection("UniversityProfile")
+      .insertOne({ ...profile, votes: [] });
+
+    const myprofile = (await connection).db().collection("MyUniversityProfile").findOne({});
+    // check if this registration from other university, if then, create new ballot
+    if (!myprofile || myprofile.publicKey !== profile.publicKey) {
+      (await connection)
+        .db()
+        .collection("Ballot")
+        .insertOne({ ...profile, state: "new" });
+    }
     return res.send("ok");
   } catch (error) {
     console.error(error);
@@ -21,10 +28,9 @@ router.post("/registration", async (req, res) => {
 
 router.post("/vote", async (req, res) => {
   try {
-    const ministryColl = (await connection).db().collection("MinistryProfile");
+    const ministry = await (await connection).db().collection("MinistryProfile").findOne({});
     const col = (await connection).db().collection("UniversityProfile");
-    const ministry = await ministryColl.findOne({});
-    let voter = null;
+    let voter;
     if (req.body.publicKey === ministry.publicKey) {
       voter = ministry;
     } else {

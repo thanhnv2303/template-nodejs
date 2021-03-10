@@ -7,8 +7,9 @@ const BALLOT = "Ballot";
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
 const axios = require("axios").default;
+const { randomTxid } = require("../../../utils");
 
-router.get("/ballot", authen, author(ROLE.STAFF), async (req, res) => {
+router.get("/ballots", authen, author(ROLE.STAFF), async (req, res) => {
   try {
     const col = (await connection).db().collection(BALLOT);
     const state = req.query.state;
@@ -22,6 +23,7 @@ router.get("/ballot", authen, author(ROLE.STAFF), async (req, res) => {
     }
     return res.json(ballots);
   } catch (error) {
+    console.error(error);
     return res.status(500).send(error.toString());
   }
 });
@@ -41,14 +43,14 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
     }
 
     try {
-      const response = await axios.post("/vote", {
-        publicKeyOfRequest,
-        privateKeyHex,
-        decision,
-      });
-
+      // const response = await axios.post("/vote", {
+      //   publicKeyOfRequest,
+      //   privateKeyHex,
+      //   decision,
+      // });
+      const response = { data: { txid: randomTxid() } };
       const col = (await connection).db().collection(BALLOT);
-      const updateResult = await col.updateOne(
+      const opResult = await col.updateOne(
         { publicKey: publicKeyOfRequest },
         {
           $set: {
@@ -58,8 +60,7 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
           },
         }
       );
-
-      return res.json(updateResult);
+      return res.json(opResult);
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);
