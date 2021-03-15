@@ -20,7 +20,7 @@ function parseExcel(rows) {
 }
 
 async function addUniversityName(certs) {
-  const col = (await connection).db().collection("UniversityProfile");
+  const col = (await connection).db().collection("MyUniversityProfile");
   const university = await col.findOne({});
   certs.forEach((cert) => {
     cert.university = university.universityName;

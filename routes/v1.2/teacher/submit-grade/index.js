@@ -54,14 +54,13 @@ router.post("/save-draff", authen, author(ROLE.TEACHER), async (req, res) => {
   }
 });
 
-router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
+router.post("/submit-grade", authen, author(ROLE.TEACHER), async (req, res) => {
   try {
     const classCol = (await connection).db().collection("Class");
     const privateKeyHex = req.body.privateKeyHex;
     const claxx = req.body.claxx;
     // require teacher != null
-    const universityPublicKey = claxx.teacher.universityPublicKey;
-    const payload = await preparePayload(privateKeyHex, universityPublicKey, claxx);
+    const payload = preparePayload(privateKeyHex, claxx.teacher.universityPublicKey, claxx);
     try {
       // const response = await axios.post("/submit-point", payload);
       const mockupData = payload.grades.map((grade) => ({ studentPublicKey: grade.studentPublicKey, transactionId: randomTxid() }));
@@ -70,23 +69,23 @@ router.post("/submit-point", authen, author(ROLE.TEACHER), async (req, res) => {
           transactions: mockupData,
         },
       };
-      claxx.students.forEach(
-        (student) =>
-          (student.versions[0].txid = response.data.transactions.find((tx) => tx.studentPublicKey === student.publicKey).transactionId)
-      );
-      const opResult = await classCol.updateOne({ classId: claxx.classId }, { $set: { students: claxx.students } });
-      return res.json(opResult);
+      claxx.students.forEach((student) => (student.versions[0].txid = findTxid(response.data.transactions, student.publicKey)));
+      const opResult = await classCol.updateOne({ classId: claxx.classId }, { $set: { students: claxx.students, isSubmited: true } });
+      claxx.isSubmited = true;
+      return res.json(claxx); // front-end need txid, isSubmited from this class
     } catch (error) {
+      console.error(error);
       if (error.response) return res.status(502).send(error.response.data);
       return res.status(502).send(error.toString());
     }
   } catch (error) {
+    console.error(error);
     return res.status(500).send(error.toString());
   }
 });
 
-async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
-  const grades = claxx.students.map(async (student) => {
+function preparePayload(privateKeyHex, universityPublicKey, claxx) {
+  const grades = claxx.students.map((student) => {
     const plain = {
       semester: claxx.semester,
       subject: claxx.subject,
@@ -103,6 +102,10 @@ async function preparePayload(privateKeyHex, universityPublicKey, claxx) {
     return { studentPublicKey: student.publicKey, eduProgramId: student.eduProgram.eduProgramId, cipher, hash };
   });
   return { privateKeyHex, universityPublicKey, classId: claxx.classId, grades };
+}
+
+function findTxid(txs, publicKey) {
+  return txs.find((tx) => tx.studentPublicKey === publicKey).transactionId;
 }
 
 module.exports = router;
