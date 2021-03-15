@@ -37,7 +37,7 @@ function addCidAsFirstTimePw(students) {
     const salt = bcrypt.genSaltSync();
     // student.firstTimePassword = student.cid;
     // TODO: remove dev mode
-    student.firstTimePassword = "dev";
+    student.firstTimePassword = "devdevdev";
     student.hashedPassword = bcrypt.hashSync(student.firstTimePassword, salt);
   });
 }
