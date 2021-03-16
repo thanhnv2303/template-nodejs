@@ -38,10 +38,12 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     let teachers = parseExcel(rows);
     addKeyPairIfNeed(teachers);
+    addUniversityPublicKey(teachers, req.body.privateKeyHex);
+
     const payload = preparePayload(teachers);
     try {
-      // const response = await sendToBKC(payload, req.body.privateKeyHex);
-      const response = mockupBKCResponse(payload, "teacherId");
+      const response = await sendToBKC(payload, req.body.privateKeyHex);
+      // const response = mockupBKCResponse(payload, "teacherId");
       addTxid(teachers, response.data.transactions, "teacherId");
       addRandomPwAndHash(teachers);
       addRole(teachers, ROLE.TEACHER);

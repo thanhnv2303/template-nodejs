@@ -24,18 +24,6 @@ router.get("/my-classes", authen, author(ROLE.TEACHER), async (req, res) => {
   }
 });
 
-router.get("/classes/:classId", authen, author(ROLE.TEACHER), async (req, res) => {
-  try {
-    const classId = req.params.classId;
-    const classCol = (await connection).db().collection("Class");
-    const docs = await classCol.findOne({ classId: classId });
-    res.json(docs);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error.toString());
-  }
-});
-
 router.post("/save-draff", authen, author(ROLE.TEACHER), async (req, res) => {
   try {
     const teacherColl = (await connection).db().collection("TeacherHistory");
@@ -61,14 +49,15 @@ router.post("/submit-grade", authen, author(ROLE.TEACHER), async (req, res) => {
     const claxx = req.body.claxx;
     // require teacher != null
     const payload = preparePayload(privateKeyHex, claxx.teacher.universityPublicKey, claxx);
+    console.log(payload);
     try {
-      // const response = await axios.post("/submit-point", payload);
-      const mockupData = payload.grades.map((grade) => ({ studentPublicKey: grade.studentPublicKey, transactionId: randomTxid() }));
-      const response = {
-        data: {
-          transactions: mockupData,
-        },
-      };
+      const response = await axios.post("/teacher/submit-grade", payload);
+      // const mockupData = payload.grades.map((grade) => ({ studentPublicKey: grade.studentPublicKey, transactionId: randomTxid() }));
+      // const response = {
+      //   data: {
+      //     transactions: mockupData,
+      //   },
+      // };
       claxx.students.forEach((student) => (student.versions[0].txid = findTxid(response.data.transactions, student.publicKey)));
       const opResult = await classCol.updateOne({ classId: claxx.classId }, { $set: { students: claxx.students, isSubmited: true } });
       claxx.isSubmited = true;

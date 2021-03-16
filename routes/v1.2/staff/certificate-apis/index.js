@@ -49,11 +49,11 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
 
     const payload = preparePayload(certs);
     try {
-      // const response = await axios.post("/staff/create-certificates", {
-      //   privateKeyHex: req.body.privateKeyHex,
-      //   certificates: payload,
-      // });
-      const response = mockupBKCResponse(payload, "studentPublicKey");
+      const response = await axios.post("/staff/create-certificates", {
+        privateKeyHex: req.body.privateKeyHex,
+        certificates: payload,
+      });
+      // const response = mockupBKCResponse(payload, "studentPublicKey");
       addTxid(certs, response.data.transactions, "studentPublicKey");
       certs.forEach((cert) => (cert.type = "create")); // event type cert: create, revoke, reactive, modify
       certs.forEach((cert) => (cert.version = 1)); // for each event, version increase 1
@@ -83,8 +83,8 @@ router.post("/revoke-certificate", authen, author(ROLE.STAFF), async (req, res) 
     const { eduProgramId, studentPublicKey } = cert;
 
     try {
-      // const response = await axios.post("/staff/revoke-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
-      const response = { data: { transactionId: randomTxid() } };
+      const response = await axios.post("/staff/revoke-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
+      // const response = { data: { transactionId: randomTxid() } };
       cert.txid = response.data.transactionId;
       cert.timestamp = Date.now();
       cert.type = "revoke";

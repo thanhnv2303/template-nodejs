@@ -31,8 +31,8 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     addKeyPairIfNeed(students);
     const payload = preparePayload(students);
     try {
-      // const response = await sendToBKC(payload, req.body.privateKeyHex);
-      const response = mockupBKCResponse(payload, "publicKey");
+      const response = await sendToBKC(payload, req.body.privateKeyHex);
+      // const response = mockupBKCResponse(payload, "publicKey");
       addTxid(students, response.data.transactions, "publicKey");
       addCidAsFirstTimePw(students);
       addRole(students, ROLE.STUDENT);

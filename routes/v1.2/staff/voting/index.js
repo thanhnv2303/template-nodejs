@@ -43,12 +43,12 @@ router.post("/vote", authen, author(ROLE.STAFF), async (req, res) => {
     }
 
     try {
-      // const response = await axios.post("/vote", {
-      //   publicKeyOfRequest,
-      //   privateKeyHex,
-      //   decision,
-      // });
-      const response = { data: { txid: randomTxid() } };
+      const response = await axios.post("/vote", {
+        publicKeyOfRequest,
+        privateKeyHex,
+        decision,
+      });
+      // const response = { data: { txid: randomTxid() } };
       const col = (await connection).db().collection(BALLOT);
       const opResult = await col.updateOne(
         { publicKey: publicKeyOfRequest },
