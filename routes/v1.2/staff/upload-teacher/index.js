@@ -39,7 +39,6 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
     let teachers = parseExcel(rows);
     addKeyPairIfNeed(teachers);
     addUniversityPublicKey(teachers, req.body.privateKeyHex);
-
     const payload = preparePayload(teachers);
     try {
       const response = await sendToBKC(payload, req.body.privateKeyHex);
