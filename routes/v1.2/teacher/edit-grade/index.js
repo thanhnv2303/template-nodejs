@@ -28,8 +28,8 @@ router.post("/edit-grade", authen, author(ROLE.TEACHER), async (req, res) => {
       const newVersion = {
         halfSemesterPoint: req.body.halfSemesterPoint,
         finalSemesterPoint: req.body.finalSemesterPoint,
-        txid: response.data.txid,
-        timestamp: response.data.timestamp,
+        txid: response.data.transactionId,
+        timestamp: Date.now(),
       };
 
       const student = req.body.claxx.students.find((std) => std.studentId === req.body.student.studentId);
@@ -37,6 +37,7 @@ router.post("/edit-grade", authen, author(ROLE.TEACHER), async (req, res) => {
 
       const col = (await connection).db().collection("Class");
       await col.updateOne({ classId: req.body.claxx.classId }, { $set: { students: req.body.claxx.students } });
+
       return res.json(newVersion);
     } catch (error) {
       console.error(error);

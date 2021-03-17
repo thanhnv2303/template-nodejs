@@ -80,7 +80,7 @@ function preparePayload(privateKeyHex, claxx) {
       studentName: student.name,
       // versions: student.versions,
       halfSemesterPoint: student.versions[0].halfSemesterPoint,
-      finalSemesterPoint: student.verions[0].finalSemesterPoint,
+      finalSemesterPoint: student.versions[0].finalSemesterPoint,
     };
     const cipher = encrypt(student.publicKey, Buffer.from(JSON.stringify(plain))).toString("hex");
     const hash = crypto.createHash("sha256").update(JSON.stringify(plain)).digest("hex");
