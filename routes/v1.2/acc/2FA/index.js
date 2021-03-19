@@ -7,7 +7,7 @@ const { authen } = require("../protect-middleware");
 
 router.post("/registry", authen, async (req, res) => {
   try {
-    const secret = spez.generateSecret();
+    const secret = spez.generateSecret({ name: "B4E - Blockchain for Education" });
     const accCol = (await connection).db().collection("Account");
     await accCol.updateOne({ _id: ObjectId(req.user.uid) }, { $set: { TwoFASecretBase32: secret.base32, TwoFAVerified: false } });
     return res.json(secret);
