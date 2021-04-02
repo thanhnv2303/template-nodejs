@@ -44,8 +44,8 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
 
     await addUniversityName(certs);
     certs = await addStudentInfoByStudentId(certs);
-    addEncrypt(certs);
     addHashCert(certs);
+    addEncrypt(certs);
 
     const payload = preparePayload(certs);
     try {

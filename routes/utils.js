@@ -1,3 +1,5 @@
+function hash(obj) {}
+
 function validate(data, schema) {
   const { error } = schema.validate(data, { abortEarly: false });
   if (error) {

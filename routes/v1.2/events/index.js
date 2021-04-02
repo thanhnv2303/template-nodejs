@@ -28,6 +28,7 @@ router.post("/registration", async (req, res) => {
 
 router.post("/vote", async (req, res) => {
   try {
+    console.log({ body: req.body });
     const ministry = await (await connection).db().collection("MinistryProfile").findOne({});
     const col = (await connection).db().collection("UniversityProfile");
     // find who is the voter
