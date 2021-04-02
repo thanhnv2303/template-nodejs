@@ -1,5 +1,3 @@
-const crypto = require("crypto");
-const { encrypt } = require("eciesjs");
 const connection = require("../../../../db");
 
 function parseExcel(rows) {
@@ -50,26 +48,6 @@ async function getStudentByStudentId(studentId) {
   return doc ? doc.profiles[0] : null;
 }
 
-function encryptCerts(certs) {
-  return certs.map((cert) => encrypt(cert.publicKey, Buffer.from(JSON.stringify(cert))).toString("hex"));
-}
-
-function hashCerts(certs) {
-  return certs.map((cert) => crypto.createHash("sha256").update(JSON.stringify(cert)).digest("hex"));
-}
-
-function addEncrypt(certs) {
-  certs.forEach((cert) => {
-    cert.cipher = encrypt(cert.publicKey, Buffer.from(JSON.stringify(cert))).toString("hex");
-  });
-}
-
-function addHashCert(certs) {
-  certs.forEach((cert) => {
-    cert.hash = crypto.createHash("sha256").update(JSON.stringify(cert)).digest("hex");
-  });
-}
-
 function preparePayload(certs) {
   return certs.map((cert) => ({
     school: cert.school,
@@ -88,13 +66,9 @@ function addTimestamp(certs) {
 } // to know which newest
 
 module.exports = {
-  hashCerts,
-  encryptCerts,
   addStudentInfoByStudentId,
   addUniversityName,
   parseExcel,
-  addEncrypt,
-  addHashCert,
   preparePayload,
   addTimestamp,
   addType,

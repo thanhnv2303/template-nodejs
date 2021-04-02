@@ -10,8 +10,10 @@ const connection = require("../../../../db");
 const axios = require("axios").default;
 const readXlsxFile = require("read-excel-file/node");
 const { bufferToStream, addTxid } = require("../utils");
-const { parseExcel, addUniversityName, addStudentInfoByStudentId, addEncrypt, addHashCert, preparePayload } = require("./helper");
-const { mockupBKCResponse, randomTxid } = require("../../../utils");
+const { parseExcel, addUniversityName, addStudentInfoByStudentId, preparePayload } = require("./helper");
+const { hashObject } = require("../../../utils");
+const { encrypt } = require("eciesjs");
+
 //
 router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
   try {
@@ -43,9 +45,10 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
     let certs = parseExcel(rows);
 
     await addUniversityName(certs);
-    certs = await addStudentInfoByStudentId(certs);
-    addHashCert(certs);
-    addEncrypt(certs);
+    const plains = await addStudentInfoByStudentId(certs);
+    const hashes = plains.map((plain) => hashObject(plain));
+    const ciphers = plains.map((plain) => encrypt(plain.publicKey, Buffer.from(JSON.stringify(plain))).toString("hex"));
+    certs = plains.map((plain, index) => ({ ...plain, hash: hashes[index], cipher: ciphers[index] }));
 
     const payload = preparePayload(certs);
     try {
@@ -53,7 +56,6 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
         privateKeyHex: req.body.privateKeyHex,
         certificates: payload,
       });
-      // const response = mockupBKCResponse(payload, "studentPublicKey");
       addTxid(certs, response.data.transactions, "studentPublicKey");
       certs.forEach((cert) => (cert.type = "create")); // event type cert: create, revoke, reactive, modify
       certs.forEach((cert) => (cert.version = 1)); // for each event, version increase 1
@@ -112,8 +114,8 @@ router.post("/reactive-certificate", authen, author(ROLE.STAFF), async (req, res
     const { eduProgramId, studentPublicKey } = cert;
 
     try {
-      // const response = await axios.post("/staff/reactive-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
-      const response = { data: { transactionId: randomTxid() } };
+      const response = await axios.post("/staff/reactive-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
+      // const response = { data: { transactionId: randomTxid() } };
       cert.txid = response.data.transactionId;
       cert.timestamp = Date.now();
       cert.type = "reactive";

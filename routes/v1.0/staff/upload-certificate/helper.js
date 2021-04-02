@@ -1,6 +1,6 @@
-const crypto = require("crypto");
 const { encrypt } = require("eciesjs");
 const connection = require("../../../db");
+const { hashObject } = require("../../../utils");
 
 function parseExcel(rows) {
   rows.shift();
@@ -46,7 +46,7 @@ function encryptCerts(certs) {
 }
 
 function hashCerts(certs) {
-  return certs.map((cert) => crypto.createHash("sha256").update(JSON.stringify(cert)).digest("hex"));
+  return certs.map((cert) => hashObject(cert));
 }
 
 function preparePayload(certs, ciphers, hashes) {
@@ -68,18 +68,18 @@ function addEncrypt(certs) {
 
 function addHashCert(certs) {
   certs.forEach((cert) => {
-    cert.hash = crypto.createHash("sha256").update(JSON.stringify(cert)).digest("hex");
+    cert.hash = hashObject(cert);
   });
 }
 
-function preparePayload(certs) {
-  return certs.map((cert) => ({
-    globalregisno: cert.globalregisno,
-    studentPublicKey: cert.publicKey,
-    cipher: cert.cipher,
-    hash: cert.hash, // TODO: remind Thanh to add hash filed too!
-  }));
-}
+// function preparePayload(certs) {
+//   return certs.map((cert) => ({
+//     globalregisno: cert.globalregisno,
+//     studentPublicKey: cert.publicKey,
+//     cipher: cert.cipher,
+//     hash: cert.hash, // TODO: remind Thanh to add hash filed too!
+//   }));
+// }
 function markActive(certs) {
   certs.forEach((cert) => (cert.active = true));
 }

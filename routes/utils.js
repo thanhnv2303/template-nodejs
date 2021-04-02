@@ -1,4 +1,9 @@
-function hash(obj) {}
+const objHasher = require("node-object-hash");
+const hasher = objHasher();
+
+function hashObject(obj) {
+  return hasher.hash(obj);
+}
 
 function validate(data, schema) {
   const { error } = schema.validate(data, { abortEarly: false });
@@ -30,4 +35,4 @@ function mockupBKCResponse(objs, idKey) {
   return { data: { transactions } };
 }
 
-module.exports = { validate, randomTxid, mockupBKCResponse };
+module.exports = { validate, randomTxid, mockupBKCResponse, hashObject };

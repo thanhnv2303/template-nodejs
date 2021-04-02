@@ -5,10 +5,8 @@ const { ROLE } = require("../../acc/role");
 const connection = require("../../../../db");
 const axios = require("axios").default;
 const ObjectID = require("mongodb").ObjectID;
-const crypto = require("crypto");
 const { encrypt } = require("eciesjs");
-
-const { randomTxid } = require("../../../utils");
+const { hashObject } = require("../../../utils");
 
 router.get("/my-classes", authen, author(ROLE.TEACHER), async (req, res) => {
   try {
@@ -83,7 +81,7 @@ function preparePayload(privateKeyHex, claxx) {
       finalSemesterPoint: student.versions[0].finalSemesterPoint,
     };
     const cipher = encrypt(student.publicKey, Buffer.from(JSON.stringify(plain))).toString("hex");
-    const hash = crypto.createHash("sha256").update(JSON.stringify(plain)).digest("hex");
+    const hash = hashObject(plain);
     return { studentPublicKey: student.publicKey, eduProgramId: student.eduProgram.eduProgramId, cipher, hash };
   });
   return { privateKeyHex, universityPublicKey: claxx.teacher.universityPublicKey, classId: claxx.classId, grades };
