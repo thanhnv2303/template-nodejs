@@ -17,7 +17,7 @@ app.use("/api/v1.2", require("./routes/v1.2"));
 
 const PORT = process.env.PORT || 8001;
 
-const { initMinistryProfile } = require("./init");
+const { initMinistryProfile, initStaffAccount } = require("./init");
 
 https
   .createServer(
@@ -30,4 +30,5 @@ https
   .listen(PORT, () => {
     console.log(`B4E School Backend listening on port ${PORT}!`);
     initMinistryProfile();
+    initStaffAccount();
   });

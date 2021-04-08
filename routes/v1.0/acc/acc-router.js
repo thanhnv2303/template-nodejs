@@ -9,43 +9,43 @@ const { ROLE } = require("./role");
 const upload = multer();
 
 // FIXME: account of university is provide, not sign up!!!, remove this api when in production
-router.post("/signup", async (req, res) => {
-  try {
-    // validate submited data
-    const { error, value } = signUpSchema.validate(req.body, { abortEarly: false });
-    if (error) {
-      const errors = {};
-      for (let err of error.details) {
-        errors[err.context.key] = err.message;
-      }
-      return res.status(400).json(errors);
-    }
+// router.post("/signup", async (req, res) => {
+//   try {
+//     // validate submited data
+//     const { error, value } = signUpSchema.validate(req.body, { abortEarly: false });
+//     if (error) {
+//       const errors = {};
+//       for (let err of error.details) {
+//         errors[err.context.key] = err.message;
+//       }
+//       return res.status(400).json(errors);
+//     }
 
-    // check if email exists
-    const col = (await connection).db().collection(ACC_COLL_NAME);
-    const emailExist = await col.findOne({ email: req.body.email });
-    if (emailExist) return res.status(400).json({ email: "Email already exists!" });
+//     // check if email exists
+//     const col = (await connection).db().collection(ACC_COLL_NAME);
+//     const emailExist = await col.findOne({ email: req.body.email });
+//     if (emailExist) return res.status(400).json({ email: "Email already exists!" });
 
-    // hash pw and save new acc to db
-    const salt = await bcrypt.genSalt();
-    req.body.hashedPassword = await bcrypt.hash(req.body.password, salt);
-    delete req.body.password;
-    delete req.body.repassword;
+//     // hash pw and save new acc to db
+//     const salt = await bcrypt.genSalt();
+//     req.body.hashedPassword = await bcrypt.hash(req.body.password, salt);
+//     delete req.body.password;
+//     delete req.body.repassword;
 
-    // set rol
-    req.body.role = ROLE.STAFF;
+//     // set rol
+//     req.body.role = ROLE.STAFF;
 
-    // create account
-    const result = await col.insertOne(req.body);
+//     // create account
+//     const result = await col.insertOne(req.body);
 
-    //send back token
-    const token = jwt.sign({ uid: result.insertedId, role: ROLE.STAFF }, process.env.TOKEN_SECRET);
-    res.json({ token: token, role: ROLE.STAFF });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error.toString());
-  }
-});
+//     //send back token
+//     const token = jwt.sign({ uid: result.insertedId, role: ROLE.STAFF }, process.env.TOKEN_SECRET);
+//     res.json({ token: token, role: ROLE.STAFF });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send(error.toString());
+//   }
+// });
 
 router.post("/signin", upload.none(), async (req, res) => {
   try {
