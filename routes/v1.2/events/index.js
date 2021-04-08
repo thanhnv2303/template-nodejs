@@ -26,9 +26,10 @@ router.post("/registration", async (req, res) => {
   }
 });
 
+// TODO: need txid in req.body too!
 router.post("/vote", async (req, res) => {
   try {
-    console.log({ body: req.body });
+    // console.log({ body: req.body });
     const ministry = await (await connection).db().collection("MinistryProfile").findOne({});
     const col = (await connection).db().collection("UniversityProfile");
     // find who is the voter
@@ -48,7 +49,7 @@ router.post("/vote", async (req, res) => {
       }
     );
 
-    // if vote about my university, update in MyUniversityProfile too
+    // if vote my university, update in MyUniversityProfile too
     const myProfileColl = (await connection).db().collection("MyUniversityProfile");
     const myprofile = await myProfileColl.findOne({});
     if (myprofile && req.body.requesterPublicKey === myprofile.publicKey) {
@@ -77,7 +78,10 @@ router.post("/vote-closed", async (req, res) => {
     const myProfileColl = (await connection).db().collection("MyUniversityProfile");
     const myprofile = await myProfileColl.findOne({});
     if (myprofile && req.body.requesterPublicKey === myprofile.publicKey) {
-      await myProfileColl.updateOne({ publicKey: req.body.requesterPublicKey }, { $set: { state: req.body.finalState } });
+      await myProfileColl.updateOne(
+        { publicKey: req.body.requesterPublicKey },
+        { $set: { state: req.body.finalState, voteCloseDate: new Date().toISOString.split("T")[0] } }
+      );
     }
 
     return res.send("ok");

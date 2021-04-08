@@ -7,7 +7,7 @@ async function initMinistryProfile() {
   const col = (await connection).db().collection("MinistryProfile");
   const doc = await col.findOne({});
   if (!doc) {
-    col.insertOne(ministryProfile);
+    await col.insertOne(ministryProfile);
   }
 }
 
