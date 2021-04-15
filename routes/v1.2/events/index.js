@@ -80,7 +80,7 @@ router.post("/vote-closed", async (req, res) => {
     if (myprofile && req.body.requesterPublicKey === myprofile.publicKey) {
       await myProfileColl.updateOne(
         { publicKey: req.body.requesterPublicKey },
-        { $set: { state: req.body.finalState, voteCloseDate: new Date().toISOString.split("T")[0] } }
+        { $set: { state: req.body.finalState, voteCloseDate: new Date().toISOString().split("T")[0] } }
       );
     }
 

@@ -27,6 +27,7 @@ router.get("/my-university-profile", authen, author(ROLE.STAFF), async (req, res
 
 router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
   try {
+    console.log("start register");
     const profile = req.body.profile;
     delete profile._id;
     profile.uid = req.user.uid;
@@ -36,11 +37,14 @@ router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
 
     const profileColl = (await connection).db().collection(MY_UNIVERSITY_PROFILE);
     await profileColl.updateOne({}, { $set: { ...profile } });
+    console.log("save profile...");
     try {
+      console.log("start send to rest-api");
       const response = await axios.post("/staff/register", {
         privateKeyHex: req.body.privateKeyHex,
         profile,
       });
+      console.log("send rest-api success");
       // const response = { data: { transactionId: randomTxid() } };
       await profileColl.updateOne({}, { $set: { state: "voting", txid: response.data.transactionId } });
       return res.send("ok");
