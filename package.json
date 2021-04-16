@@ -4,10 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "devw": "set NODE_ENV=development&& nodemon app.js",
     "devx": "NODE_ENV=development nodemon app.js",
     "start": "node app.js",
-    "start-https": "NODE_ENV=production pm2 -n school_backend-https start app-https.js"
+    "start-https": "node app-https.js"
   },
   "author": "",
   "license": "ISC",

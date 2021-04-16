@@ -11,7 +11,7 @@ axios.defaults.baseURL = process.env.REST_API_URL;
 const cors = require("cors");
 app.use(cors());
 
-const PORT = process.env.PORT || 8001;
+const PORT = process.env.PORT || 8000;
 
 // app.use("/api/v1", require("./routes/v1.0"));
 app.use("/api/v1.2", require("./routes/v1.2"));
