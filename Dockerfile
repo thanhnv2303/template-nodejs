@@ -12,4 +12,4 @@ EXPOSE 8000
 
 ENTRYPOINT [ "npm" ]
 
-CMD [ "run start-https" ]
+CMD [ "run", "start-https" ]
