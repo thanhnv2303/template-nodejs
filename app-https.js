@@ -5,7 +5,7 @@ var fs = require("fs");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+// require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` }); // docker-compose will provide env var
 const axios = require("axios").default;
 axios.defaults.baseURL = process.env.REST_API_URL;
 
@@ -22,8 +22,8 @@ const { initMinistryProfile, initStaffAccount } = require("./init");
 https
   .createServer(
     {
-      key: fs.readFileSync("/etc/letsencrypt/live/school-backend.b4e.vn/privkey.pem"),
-      cert: fs.readFileSync("/etc/letsencrypt/live/school-backend.b4e.vn/fullchain.pem"),
+      key: fs.readFileSync("/etc/letsencrypt/live/school-backend.b4e.vn/privkey.pem"), // need bind mount
+      cert: fs.readFileSync("/etc/letsencrypt/live/school-backend.b4e.vn/fullchain.pem"), // need bind mount
     },
     app
   )

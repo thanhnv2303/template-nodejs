@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
     "devx": "NODE_ENV=development nodemon app.js",
-    "start": "node app.js",
-    "start-https": "node app-https.js"
+    "start-https": "node app-https.js",
+    "start": "node app.js"
   },
   "author": "",
   "license": "ISC",
