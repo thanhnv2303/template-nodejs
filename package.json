@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "devx": "NODE_ENV=development nodemon app.js",
+    "devx": "nodemon app.js",
     "start-https": "node app-https.js",
     "start": "node app.js"
   },
