@@ -52,10 +52,12 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
 
     const payload = preparePayload(certs);
     try {
+      console.log("Start send certificates: ", payload.slice(0, 2));
       const response = await axios.post("/staff/create-certificates", {
         privateKeyHex: req.body.privateKeyHex,
         certificates: payload,
       });
+      console.log("Send certificates ok: ", payload.slice(0, 2));
       addTxid(certs, response.data.transactions, "studentPublicKey");
       certs.forEach((cert) => (cert.type = "create")); // event type cert: create, revoke, reactive, modify
       certs.forEach((cert) => (cert.version = 1)); // for each event, version increase 1

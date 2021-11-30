@@ -7,5 +7,6 @@ router.use("/staff", require("./staff"));
 router.use("/teacher", require("./teacher"));
 router.use("/student", require("./student"));
 router.use("/events", require("./events"));
+router.use("/gen-data", require("./gen-sample-data/gen-grade"));
 
 module.exports = router;

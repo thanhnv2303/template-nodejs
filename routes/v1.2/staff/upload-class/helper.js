@@ -51,6 +51,7 @@ async function getTeacherById(teacherId) {
 }
 
 async function getStudentsByIds(studentIds) {
+  // console.log("🚧 --> getStudentsByIds --> studentIds", studentIds);
   const studentHistoryCol = (await connection).db().collection("StudentHistory");
   const studentPromises = studentIds
     .filter((sid) => sid !== "")
@@ -59,9 +60,13 @@ async function getStudentsByIds(studentIds) {
         { "profiles.studentId": studentId.toString() },
         { projection: { "profiles.$": 1, _id: 0 } }
       );
+      if (!doc) {
+        console.log(`NOT FOUND STUDENT: studentId: ${studentId}`);
+      }
       return doc ? doc.profiles[0] : null;
     });
-  return Promise.all(studentPromises);
+  // console.log("🚧 --> getStudentsByIds --> studentPromises", await Promise.all(studentPromises));
+  return (await Promise.all(studentPromises)).filter((std) => std !== null);
 }
 
 module.exports = { parseExcel, getTeacherById, getStudentsByIds, parseExcelV122 };
