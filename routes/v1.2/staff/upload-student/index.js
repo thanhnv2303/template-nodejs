@@ -31,15 +31,15 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     addKeyPairIfNeed(students);
     const payload = preparePayload(students);
     try {
-      console.log("Start send create student: ", payload.slice(0, 2));
-      const response = await sendToBKC(payload, req.body.privateKeyHex);
-      console.log("Create student ok: ", payload.slice(0, 2));
-      // const response = mockupBKCResponse(payload, "publicKey");
-      addTxid(students, response.data.transactions, "publicKey");
-      addCidAsFirstTimePw(students);
-      addRole(students, ROLE.STUDENT);
-      const insertedIds = await createAccount(students);
-      addUid(students, insertedIds);
+      // console.log("Start send create student: ", payload.slice(0, 2));
+      // const response = await sendToBKC(payload, req.body.privateKeyHex);
+      // console.log("Create student ok: ", payload.slice(0, 2));
+      // // const response = mockupBKCResponse(payload, "publicKey");
+      // addTxid(students, response.data.transactions, "publicKey");
+      // addCidAsFirstTimePw(students);
+      // addRole(students, ROLE.STUDENT);
+      // const insertedIds = await createAccount(students);
+      // addUid(students, insertedIds);
       const result = await saveProfiles(students, "StudentHistory", req.file.originalname);
       res.json(result.ops[0]);
     } catch (error) {

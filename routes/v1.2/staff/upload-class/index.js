@@ -43,16 +43,16 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
     }));
 
     try {
-      console.log("Start send create classes: ", payload.slice(0, 2));
-      const response = await axios.post("/staff/create-classes", {
-        privateKeyHex: req.body.privateKeyHex,
-        classes: payload,
-      });
-      console.log("Create classes ok: ", payload.slice(0, 2));
+      // console.log("Start send create classes: ", payload.slice(0, 2));
+      // const response = await axios.post("/staff/create-classes", {
+      //   privateKeyHex: req.body.privateKeyHex,
+      //   classes: payload,
+      // });
+      // console.log("Create classes ok: ", payload.slice(0, 2));
 
-      classes.forEach((clx) => {
-        clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
-      });
+      // classes.forEach((clx) => {
+      //   clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
+      // });
       const classCol = (await connection).db().collection("Class");
       const result = await classCol.insertMany(classes);
       return res.json({ classIds: classes.map((clx) => clx.classId), status: "success" });

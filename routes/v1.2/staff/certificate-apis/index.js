@@ -116,13 +116,13 @@ router.post("/reactive-certificate", authen, author(ROLE.STAFF), async (req, res
     const { eduProgramId, studentPublicKey } = cert;
 
     try {
-      const response = await axios.post("/staff/reactive-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
-      // const response = { data: { transactionId: randomTxid() } };
-      cert.txid = response.data.transactionId;
-      cert.timestamp = Date.now();
-      cert.type = "reactive";
-      cert.version = cert.version + 1;
-      delete cert._id;
+      // const response = await axios.post("/staff/reactive-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
+      // // const response = { data: { transactionId: randomTxid() } };
+      // cert.txid = response.data.transactionId;
+      // cert.timestamp = Date.now();
+      // cert.type = "reactive";
+      // cert.version = cert.version + 1;
+      // delete cert._id;
       const col = (await connection).db().collection("Certificate");
       await col.updateOne({ studentId: cert.studentId }, { $push: { versions: cert } });
       const updatedDoc = await col.findOne({ studentId: cert.studentId });
