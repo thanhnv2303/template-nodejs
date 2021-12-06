@@ -41,6 +41,7 @@ function parseExcelV122(rows) {
         .map((sid) => sid.trim()),
     };
   });
+  // console.log("🚧 --> parseExcelV122 --> records", records);
   return records;
 }
 
@@ -61,7 +62,7 @@ async function getStudentsByIds(studentIds) {
         { projection: { "profiles.$": 1, _id: 0 } }
       );
       if (!doc) {
-        console.log(`NOT FOUND STUDENT: studentId: ${studentId}`);
+        console.log(`Get Students By Ids: NOT FOUND STUDENT: studentId: ${studentId}`);
       }
       return doc ? doc.profiles[0] : null;
     });

@@ -28,39 +28,34 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
 
     // pre-join students' info, teacher info,
     const classesPromises = records.map(async (claxx) => {
-      // TODO: if not found item, --> res to FE to notif user
-      // const classId = claxx.classId;
-      // const studentIds = claxx.studentIds;
-      // const students = await getStudentsByIds(claxx.studentIds);
       claxx.teacher = await getTeacherById(claxx.teacherId);
       claxx.students = await getStudentsByIds(claxx.studentIds);
       return claxx;
     });
     let classes = await Promise.all(classesPromises);
 
-    // const payload = classes.map((cls) => ({
-    //   classId: cls.classId,
-    //   subjectId: cls.subject.subjectId,
-    //   credit: cls.subject.credit,
-    //   teacherPublicKey: cls.teacher.publicKey,
-    //   studentPublicKeys: cls.students.map((std) => std.publicKey),
-    // }));
+    const payload = classes.map((cls) => ({
+      classId: cls.classId,
+      subjectId: cls.subject.subjectId,
+      credit: cls.subject.credit,
+      teacherPublicKey: cls.teacher.publicKey,
+      studentPublicKeys: cls.students.map((std) => std.publicKey),
+    }));
 
     try {
-      // // console.log("Start send create classes: ", payload.slice(0, 2));
-      // const response = await axios.post("/staff/create-classes", {
-      //   privateKeyHex: req.body.privateKeyHex,
-      //   classes: payload,
-      // });
-      // // console.log("Create classes ok: ", payload.slice(0, 2));
+      console.log("Start send create classes: ", payload.slice(0, 2));
+      const response = await axios.post("/staff/create-classes", {
+        privateKeyHex: req.body.privateKeyHex,
+        classes: payload,
+      });
+      console.log("Create classes ok: ", payload.slice(0, 2));
 
-      // classes.forEach((clx) => {
-      //   clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
-      // });
-      // const classCol = (await connection).db().collection("Class");
-      // const result = await classCol.insertMany(classes);
-      // return res.json(result.ops);
-      return res.json({ ok: "testing" });
+      classes.forEach((clx) => {
+        clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
+      });
+      const classCol = (await connection).db().collection("Class");
+      const result = await classCol.insertMany(classes);
+      return res.json({ classIds: classes.map((clx) => clx.classId), status: "success" });
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);

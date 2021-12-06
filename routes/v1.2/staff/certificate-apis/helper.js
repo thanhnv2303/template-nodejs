@@ -27,17 +27,22 @@ async function addUniversityName(certs) {
 
 async function addStudentInfoByStudentId(certs) {
   const certsPromises = certs.map(async (cert) => {
-    const student = await getStudentByStudentId(cert.studentId);
-    return {
-      ...cert,
-      name: student.name,
-      birthday: student.birthday,
-      gender: student.gender,
-      publicKey: student.publicKey,
-      studentPublicKey: student.publicKey, // this field for payload
-      eduProgramId: student.eduProgram.eduProgramId,
-      school: student.school,
-    };
+    try {
+      const student = await getStudentByStudentId(cert.studentId);
+      return {
+        ...cert,
+        name: student.name,
+        birthday: student.birthday,
+        gender: student.gender,
+        publicKey: student.publicKey,
+        studentPublicKey: student.publicKey, // this field for payload
+        eduProgramId: student.eduProgram.eduProgramId,
+        school: student.school,
+      };
+    } catch (error) {
+      console.log("🚧 -->upload cert:  not found student: addStudentInfoByStudentId: certsPromises --> cert", cert);
+      // console.log()
+    }
   });
   return Promise.all(certsPromises);
 }

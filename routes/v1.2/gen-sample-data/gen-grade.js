@@ -14,9 +14,9 @@ router.post("/gen-grade", async (req, res) => {
   try {
     const classCol = (await connection).db().collection("Class");
     const classIds = req.body.classIds;
-    // console.log("🚧 --> router.post --> classIds", classIds);
 
-    const promises = classIds.map(async (classId, index) => {
+    for (let i = 0; i < classIds.length; i++) {
+      const classId = classIds[i];
       try {
         const claxx = await classCol.findOne({ classId });
         if (claxx) {
@@ -30,17 +30,15 @@ router.post("/gen-grade", async (req, res) => {
           });
 
           const privateKeyHex = claxx.teacher.privateKey;
-
           const payload = preparePayload(privateKeyHex, claxx);
           try {
-            console.log(`${index}/${classIds.length} Start send grade for class ${classId}`);
+            console.log(`${i}/${classIds.length} Start send grade for class ${classId}`);
             const response = await axios.post("/teacher/submit-grade", payload);
-            console.log(`${index}/${classIds.length}  Send grade for class ${classId} ok`);
+            console.log(`${i}/${classIds.length}  Send grade for class ${classId} ok`);
             claxx.students.forEach((student) => (student.versions[0].txid = findTxid(response.data.transactions, student.publicKey)));
             claxx.students.forEach((student) => (student.versions[0].timestamp = Date.now()));
             await classCol.updateOne({ classId: claxx.classId }, { $set: { students: claxx.students, isSubmited: true } });
             claxx.isSubmited = true;
-            return { ok: 1 };
           } catch (error) {
             console.error("Error when send tx for: ", classId, error);
             throw error;
@@ -50,9 +48,7 @@ router.post("/gen-grade", async (req, res) => {
         console.error("Error while gen grade for: " + classId, error);
         throw error;
       }
-    });
-
-    await Promise.all(promises);
+    }
     return res.json("gen grade done!");
   } catch (error) {
     console.error(error);
