@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const upload = multer();
-
 const { authen, author } = require("../../acc/protect-middleware");
 const { ROLE } = require("../../acc/role");
 const connection = require("../../../../db");
@@ -15,9 +14,12 @@ const { parseExcel, getTeacherById, getStudentsByIds, parseExcelV122 } = require
 
 //
 router.get("/classes", authen, author(ROLE.STAFF), async (req, res) => {
+  const skip = Number(req.query.skip ?? 0);
+  const limit = Number(req.query.limit ?? 10);
   const classCol = (await connection).db().collection("Class");
-  const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).toArray();
-  res.json(docs);
+  const count = await classCol.countDocuments();
+  const docs = await classCol.find({}).sort({ uploadTimestamp: -1 }).skip(skip).limit(limit).toArray();
+  res.json({ count, docs });
 });
 
 // v1.2.2
@@ -43,19 +45,20 @@ router.post("/upload-classes", authen, author(ROLE.STAFF), upload.single("excel-
     }));
 
     try {
-      // console.log("Start send create classes: ", payload.slice(0, 2));
-      // const response = await axios.post("/staff/create-classes", {
-      //   privateKeyHex: req.body.privateKeyHex,
-      //   classes: payload,
-      // });
-      // console.log("Create classes ok: ", payload.slice(0, 2));
+      console.log("Start send create classes: ", payload.slice(0, 2));
+      const response = await axios.post("/staff/create-classes", {
+        privateKeyHex: req.body.privateKeyHex,
+        classes: payload,
+      });
+      console.log("Create classes ok: ", payload.slice(0, 2));
 
-      // classes.forEach((clx) => {
-      //   clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
-      // });
+      classes.forEach((clx) => {
+        clx.txid = response.data.transactions.find((tx) => tx.classId === clx.classId).transactionId;
+      });
       const classCol = (await connection).db().collection("Class");
       const result = await classCol.insertMany(classes);
-      return res.json({ classIds: classes.map((clx) => clx.classId), status: "success" });
+      // return res.json({ classIds: classes.map((clx) => clx.classId), status: "success" });
+      return res.json(classes);
     } catch (error) {
       console.error(error);
       if (error.response) return res.status(502).send(error.response.data);

@@ -45,6 +45,7 @@ router.post("/submit-grade", authen, author(ROLE.TEACHER), async (req, res) => {
     const classCol = (await connection).db().collection("Class");
     const privateKeyHex = req.body.privateKeyHex;
     const claxx = req.body.claxx;
+    // console.log("🚧 --> router.post --> claxx", claxx);
     // require teacher != null
     const payload = preparePayload(privateKeyHex, claxx);
     try {

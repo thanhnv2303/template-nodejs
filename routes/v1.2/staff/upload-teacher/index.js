@@ -24,8 +24,10 @@ const { mockupBKCResponse } = require("../../../utils");
 
 router.get("/teacher-history", authen, author(ROLE.STAFF), async (req, res) => {
   try {
+    const skip = Number(req.query.skip ?? 0);
+    const limit = Number(req.query.limit ?? 10);
     const teacherHistoryCol = (await connection).db().collection("TeacherHistory");
-    const result = await teacherHistoryCol.find().toArray();
+    const result = await teacherHistoryCol.find().sort({ time: -1 }).skip(skip).limit(limit).toArray();
     res.json(result);
   } catch (error) {
     res.status(500).send(error.toString());
@@ -41,10 +43,10 @@ router.post("/create-teacher", authen, author(ROLE.STAFF), upload.single("excel-
     addUniversityPublicKey(teachers, req.body.privateKeyHex);
     const payload = preparePayload(teachers);
     try {
-      // console.log("Start send create Teacher: ", payload.slice(0, 2));
-      // const response = await sendToBKC(payload, req.body.privateKeyHex);
-      // console.log("Create Teacher ok: ", payload.slice(0, 2));
-      // addTxid(teachers, response.data.transactions, "teacherId");
+      console.log("Start send create Teacher: ", payload.slice(0, 2));
+      const response = await sendToBKC(payload, req.body.privateKeyHex);
+      console.log("Create Teacher ok: ", payload.slice(0, 2));
+      addTxid(teachers, response.data.transactions, "teacherId");
       addRandomPwAndHash(teachers);
       addRole(teachers, ROLE.TEACHER);
       const insertedIds = await createAccount(teachers);

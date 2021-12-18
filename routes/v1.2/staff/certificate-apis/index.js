@@ -17,9 +17,13 @@ const { encrypt } = require("eciesjs");
 //
 router.get("/certificates", authen, author(ROLE.STAFF), async (req, res) => {
   try {
+    const skip = Number(req.query.skip ?? 0);
+    const limit = Number(req.query.limit ?? 10);
     const coll = (await connection).db().collection("Certificate");
-    const docs = await coll.find({}).toArray();
-    return res.json(docs);
+    const count = await coll.countDocuments();
+    const docs = await coll.find({}).sort({ timestamp: -1 }).skip(skip).limit(limit).toArray();
+    res.json({ count, docs });
+    // return res.json(docs);
   } catch (error) {
     console.error(error);
     return res.status(500).send(error);
@@ -43,6 +47,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
   try {
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     let certs = parseExcel(rows);
+    console.log("🚧 --> router.post --> certs", certs);
 
     await addUniversityName(certs);
     const plains = await addStudentInfoByStudentId(certs);
@@ -116,13 +121,13 @@ router.post("/reactive-certificate", authen, author(ROLE.STAFF), async (req, res
     const { eduProgramId, studentPublicKey } = cert;
 
     try {
-      // const response = await axios.post("/staff/reactive-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
-      // // const response = { data: { transactionId: randomTxid() } };
-      // cert.txid = response.data.transactionId;
-      // cert.timestamp = Date.now();
-      // cert.type = "reactive";
-      // cert.version = cert.version + 1;
-      // delete cert._id;
+      const response = await axios.post("/staff/reactive-certificate", { privateKeyHex, eduProgramId, studentPublicKey });
+      // const response = { data: { transactionId: randomTxid() } };
+      cert.txid = response.data.transactionId;
+      cert.timestamp = Date.now();
+      cert.type = "reactive";
+      cert.version = cert.version + 1;
+      delete cert._id;
       const col = (await connection).db().collection("Certificate");
       await col.updateOne({ studentId: cert.studentId }, { $push: { versions: cert } });
       const updatedDoc = await col.findOne({ studentId: cert.studentId });
