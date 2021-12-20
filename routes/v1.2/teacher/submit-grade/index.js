@@ -10,11 +10,13 @@ const { hashObject } = require("../../../utils");
 
 router.get("/my-classes", authen, author(ROLE.TEACHER), async (req, res) => {
   try {
+    const skip = Number(req.query.skip ?? 0);
+    const limit = Number(req.query.limit ?? 10);
     const col = (await connection).db().collection("TeacherHistory");
     const doc = await col.findOne({ "profiles.uid": new ObjectID(req.user.uid) }, { projection: { "profiles.$": 1, _id: 0 } });
     const teacherProfile = doc.profiles[0];
     const classColl = (await connection).db().collection("Class");
-    const classes = await classColl.find({ teacherId: teacherProfile.teacherId }).toArray();
+    const classes = await classColl.find({ teacherId: teacherProfile.teacherId }).sort({ semester: -1 }).skip(skip).limit(limit).toArray();
     return res.json(classes);
   } catch (error) {
     console.error(error);
