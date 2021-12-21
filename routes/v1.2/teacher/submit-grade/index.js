@@ -68,6 +68,19 @@ router.post("/submit-grade", authen, author(ROLE.TEACHER), async (req, res) => {
   }
 });
 
+router.get("/sync-grade", authen, author(ROLE.TEACHER), async (req, res) => {
+  try {
+    const classId = req.query.classId;
+    const response = await axios.post(
+      `http://dev.hust-edu.appspot.com/api/grades?accessKey=${process.env.QLDT_ACCESS_KEY}&classId=${classId}`
+    );
+    return res.json(response.data);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send(error.toString());
+  }
+});
+
 function preparePayload(privateKeyHex, claxx) {
   const grades = claxx.students.map((student) => {
     const plain = {
