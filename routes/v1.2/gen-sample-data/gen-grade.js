@@ -32,9 +32,9 @@ router.post("/gen-grade", async (req, res) => {
           const privateKeyHex = claxx.teacher.privateKey;
           const payload = preparePayload(privateKeyHex, claxx);
           try {
-            console.log(`${i}/${classIds.length} Start send grade for class ${classId}`);
+            // console.log(`${i}/${classIds.length} Start send grade for class ${classId}`);
             const response = await axios.post("/teacher/submit-grade", payload);
-            console.log(`${i}/${classIds.length}  Send grade for class ${classId} ok`);
+            // console.log(`${i}/${classIds.length}  Send grade for class ${classId} ok`);
             claxx.students.forEach((student) => (student.versions[0].txid = findTxid(response.data.transactions, student.publicKey)));
             claxx.students.forEach((student) => (student.versions[0].timestamp = Date.now()));
             await classCol.updateOne({ classId: claxx.classId }, { $set: { students: claxx.students, isSubmited: true } });

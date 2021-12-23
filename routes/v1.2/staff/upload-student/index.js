@@ -33,9 +33,9 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
     addKeyPairIfNeed(students);
     const payload = preparePayload(students);
     try {
-      console.log("Start send create student: ", payload.slice(0, 2));
+      // console.log("Start send create student: ", payload.slice(0, 2));
       const response = await sendToBKC(payload, req.body.privateKeyHex);
-      console.log("Create student ok: ", payload.slice(0, 2));
+      // console.log("Create student ok: ", payload.slice(0, 2));
       // const response = mockupBKCResponse(payload, "publicKey");
       addTxid(students, response.data.transactions, "publicKey");
       addCidAsFirstTimePw(students);
@@ -46,7 +46,7 @@ router.post("/create-student", authen, author(ROLE.STAFF), upload.single("excel-
       res.json(result.ops[0]);
     } catch (error) {
       console.error(error);
-      console.log("Create student fail: ", payload.slice(0, 2));
+      // console.log("Create student fail: ", payload.slice(0, 2));
       if (error.response) return res.status(502).send(error.response.data);
       else return res.status(500).send(error.toString());
     }

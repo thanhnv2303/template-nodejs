@@ -5,10 +5,11 @@ function parseExcel(rows) {
   // skip header
   rows.shift();
   return rows.map((row) => {
+    // console.log("birthday", row[2]);
     return {
       studentId: row[0].toString(),
       name: row[1],
-      birthday: row[2].toString(),
+      birthday: new Date(row[2]).toISOString().split("T")[0] || "null",
       gender: row[3],
       email: row[4],
       cid: row[5].toString(), // citizen identification numbers

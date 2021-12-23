@@ -37,12 +37,12 @@ router.post("/register", authen, author(ROLE.STAFF), async (req, res) => {
     const profileColl = (await connection).db().collection(MY_UNIVERSITY_PROFILE);
     await profileColl.updateOne({}, { $set: { ...profile } });
     try {
-      console.log("Start send registry");
+      // console.log("Start send registry");
       const response = await axios.post("/staff/register", {
         privateKeyHex: req.body.privateKeyHex,
         profile,
       });
-      console.log("Success registry");
+      // console.log("Success registry");
       // const response = { data: { transactionId: randomTxid() } };
       await profileColl.updateOne({}, { $set: { state: "voting", txid: response.data.transactionId } });
       return res.send("ok");

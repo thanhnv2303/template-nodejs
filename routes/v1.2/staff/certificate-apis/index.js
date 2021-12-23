@@ -47,7 +47,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
   try {
     const rows = await readXlsxFile(bufferToStream(req.file.buffer));
     let certs = parseExcel(rows);
-    console.log("🚧 --> router.post --> certs", certs);
+    // // console.log("🚧 --> router.post --> certs", certs);
 
     await addUniversityName(certs);
     const plains = await addStudentInfoByStudentId(certs);
@@ -57,7 +57,7 @@ router.post("/upload-certificates", authen, author(ROLE.STAFF), upload.single("e
 
     const payload = preparePayload(certs);
     try {
-      console.log("Start send certificates: ", payload.slice(0, 2));
+      // console.log("Start send certificates: ", payload.slice(0, 2));
       const response = await axios.post("/staff/create-certificates", {
         privateKeyHex: req.body.privateKeyHex,
         certificates: payload,
