@@ -64,8 +64,8 @@ router.post("/change-avatar", authen, author(ROLE.STAFF), upload.single("avatar"
     const imgBase64 = req.file.buffer.toString("base64");
     const imgSrc = `data:${req.file.mimetype};base64,${imgBase64}`;
     // each db instance is for only one university -> this collection intended has only 1 document
-    // await col.updateOne({ uid: req.user.uid }, { $set: { imgSrc: imgSrc } }, { upsert: true });
-    await col.insertOne({ imgSrc });
+    await col.updateOne({ uid: req.user.uid }, { $set: { imgSrc: imgSrc } }, { upsert: true });
+    // await col.insertOne({ imgSrc });
     return res.json(imgSrc);
   } catch (error) {
     console.error(error);

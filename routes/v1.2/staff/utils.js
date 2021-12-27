@@ -34,15 +34,15 @@ function addTxid(objs, txs, idFieldName) {
 
 function addRandomPwAndHash(objs) {
   objs.forEach((obj) => {
-    // const randomPassword = generator.generate({
-    //   length: 8,
-    //   numbers: true,
-    // });
+    const randomPassword = generator.generate({
+      length: 8,
+      numbers: true,
+    });
     const salt = bcrypt.genSaltSync();
-    // obj.firstTimePassword = randomPassword;
+    obj.firstTimePassword = randomPassword;
 
     // TODO: remove dev mode
-    obj.firstTimePassword = "devdevdev";
+    // obj.firstTimePassword = "devdevdev";
     obj.hashedPassword = bcrypt.hashSync(obj.firstTimePassword, salt);
   });
 }

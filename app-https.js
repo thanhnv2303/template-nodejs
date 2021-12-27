@@ -22,8 +22,8 @@ const { initMinistryProfile, initStaffAccount } = require("./init");
 https
   .createServer(
     {
-      key: fs.readFileSync("/etc/letsencrypt/live/school-backend-2.b4e.vn/privkey.pem"), // need bind mount
-      cert: fs.readFileSync("/etc/letsencrypt/live/school-backend-2.b4e.vn/fullchain.pem"), // need bind mount
+      key: fs.readFileSync("/privkey.pem"),
+      cert: fs.readFileSync("/fullchain.pem"),
     },
     app
   )
